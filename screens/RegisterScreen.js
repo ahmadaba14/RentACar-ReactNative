@@ -34,9 +34,8 @@ const RegisterScreen = () => {
                 nationality: nationality,
                 phoneNumber: phoneNumber,
                 dateOfBirth: dateOfBirth,
-                user_id: uid
             };
-            await createUserDocument(user);
+            await createUserDocument(user, uid);
         }catch(error){
             alert(error.message);
         }

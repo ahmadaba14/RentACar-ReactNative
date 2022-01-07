@@ -1,10 +1,12 @@
 import React, { useState } from 'react'
-import { KeyboardAvoidingView, StyleSheet, Text, View, Image } from 'react-native'
+import { KeyboardAvoidingView, StyleSheet, Text, View, Image, Alert } from 'react-native'
 import { ScrollView, TextInput, TouchableOpacity } from 'react-native-gesture-handler'
 import HomeHeader from '../components/HomeHeader'
-import ImagePicker from 'react-native-image-picker';
-import { auth, createCarDocument, firestore } from '../firebase';
-import { collection, query, where } from 'firebase/firestore';
+import Constants from 'expo-constants'
+import * as ImagePicker from 'expo-image-picker'
+import firebase from 'firebase/compat/app';
+import 'firebase/storage';
+import { auth, createCarDocument, firestore, uploadPhotoAsync} from '../firebase';
 
 const AddCar = ({navigation}) => {
     const [carName, setCarName] = useState('')
@@ -18,13 +20,39 @@ const AddCar = ({navigation}) => {
     const [rentRate, setRentRate] = useState('')
 
     const [image, setImage] = useState('')
+    const [remoteUri, setRemoteUri] = useState('')
+
+    const pickImage = async () => {
+        if (Constants.platform.ios) {
+            const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+            if (status != "granted") {
+                alert("We need permissions to access your camera roll")
+            }
+            else {
+                let result = await ImagePicker.launchImageLibraryAsync({
+                    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                    allowsEditing: true,
+                    aspect: [4, 3]
+                });
+        
+                if (!result.cancelled){
+                    setImage(result.uri);
+                }
+            }
+        }
+    }
 
     const addCar = async () => {
         try {
             auth.onAuthStateChanged(user => {
                 if (user) {
                     const uid = user.uid;
-                    const userRef = query(collection(firestore, "users"), where("user_id", "==", uid));
+                    uploadPhotoAsync(image, `${uid}-${carName}`)
+                        .then((downloadUrl) => {
+                            console.log("Image Link available at ", downloadUrl)
+                            setRemoteUri(downloadUrl);
+                        })
                     const car = {
                         carName: carName,
                         carModel: carModel,
@@ -35,7 +63,8 @@ const AddCar = ({navigation}) => {
                         carType: carType,
                         pickupCity: pickupCity,
                         rentRate: rentRate,
-                        userRef: firestore.doc('users/' + userRef.id)
+                        image: remoteUri,
+                        userRef: firestore.doc('users/' + uid)
                     }
                     createCarDocument(car);
                     console.log(car.carName, ' Added Successfully ');
@@ -45,37 +74,6 @@ const AddCar = ({navigation}) => {
             alert(error.message);
         }
     }
-
-    // const selectFile = () => {
-    //     var options = {
-    //         title: 'Choose Picture',
-    //         customButtons: [
-    //             {
-    //                 name: 'customOptionKey',
-    //                 title: 'Choose file from Custom Option'
-    //             },
-    //         ],
-    //         storageOptions: {
-    //             skipBackup: true,
-    //             path: 'images'
-    //         }
-    //     };
-    //     ImagePicker.showImagePicker(options, res => {
-    //         console.log('Response = ', res);
-      
-    //         if (res.didCancel) {
-    //           console.log('User cancelled image picker');
-    //         } else if (res.error) {
-    //           console.log('ImagePicker Error: ', res.error);
-    //         } else if (res.customButton) {
-    //           console.log('User tapped custom button: ', res.customButton);
-    //           alert(res.customButton);
-    //         } else {
-    //           let source = res;
-    //           setImage(source);
-    //         }
-    //       });
-    // }
 
     return (
         <View style={{flex: 1}}>
@@ -144,17 +142,17 @@ const AddCar = ({navigation}) => {
                             onChangeText={text => setRentRate(text)}
                             style={styles.input}
                         />
-                        {/* <View style={styles.imageContainer}>
-                            <TouchableOpacity style={styles.button} onPress={selectFile}>
-                                <Text style={styles.buttonText}>Choose Picture</Text>
+                        <View style={styles.imageContainer}>
+                            <TouchableOpacity style={styles.imageButton} onPress={pickImage}>
+                                <Text style={styles.imageButtonText}>Choose Picture</Text>
                             </TouchableOpacity>
                             <Image
                                 source={{
-                                    uri: 'data:image/jpeg:base64' + {image}
+                                    uri: image
                                 }}
                                 style={styles.image} 
                             />
-                        </View> */}
+                        </View>
                     </View>
                     <View style={styles.buttonContainer}>
                         <TouchableOpacity
@@ -195,6 +193,15 @@ const styles = StyleSheet.create({
         borderWidth: 2,
         borderColor: '#0782F9',
     },
+    imageButton: {
+        backgroundColor: 'white',
+        padding: 15,
+        borderRadius: 10,
+        alignItems: 'center',
+        marginTop: 15,
+        borderWidth: 2,
+        borderColor: '#0782F9'
+    },
     button: {
         backgroundColor: '#0782F9',
         width: 300,
@@ -202,6 +209,11 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         alignItems: 'center',
         marginTop: 15
+    },
+    imageButtonText: {
+        color: '#0782F9',
+        fontWeight: '700',
+        fontSize: 16
     },
     buttonText: {
         color: 'white',
@@ -219,6 +231,7 @@ const styles = StyleSheet.create({
         height: 130, 
         borderWidth: 2, 
         borderColor: '#0782F9',
-        borderRadius: 5
+        borderRadius: 5,
+        resizeMode: 'contain'
     },
 })

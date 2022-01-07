@@ -3,7 +3,9 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import 'firebase/compat/firestore';
 import 'firebase/firestore';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { Firestore, getFirestore } from 'firebase/firestore';
+import { Platform } from 'react-native';
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -35,10 +37,10 @@ const firestore = firebase.firestore();
 export { auth };
 export { firestore };
 
-export const createUserDocument = async (user) => {
+export const createUserDocument = async (user, uid) => {
   if (!user) return;
 
-  const userRef = firestore.collection('users').doc(user.uid);
+  const userRef = firestore.collection('users').doc(uid);
 
   const snap = await userRef.get();
 
@@ -46,7 +48,7 @@ export const createUserDocument = async (user) => {
     try {
       userRef.set(user)
     } catch (error) {
-      console.log("Error catching user", error);
+      console.log("Error creating user", error);
     }
   }
 }
@@ -59,6 +61,18 @@ export const createCarDocument = async (car) => {
   try {
     carRef.set(car)
   } catch (error) {
-    console.log("Error creator car", error)
+    console.log("Error creating car", error)
   }
+}
+
+export const uploadPhotoAsync = async (uri, imageName) => {
+  const storage = getStorage();
+  const reference = ref(storage, imageName);
+
+  const img = await fetch(uri);
+  const bytes = await img.blob();
+
+  await uploadBytes(reference, bytes);
+
+  return getDownloadURL(reference);
 }
