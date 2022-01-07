@@ -1,0 +1,88 @@
+const cars = [
+    {
+        id: 1,
+        carName: 'Toyota Vitz',
+        rentRate: '700',
+        carModel: 'F 1.0',
+        modelYear: 2017,
+        transmissionType: 'Automatic',
+        engineCapacity: 1000,
+        seatingCapacity: 4,
+        carType: 'Supermini',
+        renter: 'Ali Khan',
+        pickupCity: 'Islamabad',
+        image: 'https://upload.wikimedia.org/wikipedia/commons/5/51/Toyota_Vitz_KSP130_1.0F.jpg'
+    },
+    {
+        id: 2,
+        carName: 'Toyota Corolla',
+        rentRate: '900',
+        carModel: 'GLi VVTi',
+        modelYear: 2019,
+        transmissionType: 'Automatic',
+        engineCapacity: 1300,
+        seatingCapacity: 4,
+        carType: 'Sedan',
+        renter: 'Saqib Niazi',
+        pickupCity: 'Peshawar',
+        image: 'https://i.ytimg.com/vi/lDnv6HJrAa4/maxresdefault.jpg'
+    },
+    {
+        id: 3,
+        carName: 'Suzuki Alto',
+        rentRate: '600',
+        carModel: 'VXL',
+        modelYear: 2019,
+        transmissionType: 'Automatic',
+        engineCapacity: 660,
+        seatingCapacity: 4,
+        carType: 'Supermini',
+        renter: 'Ahmad Bin Ashraf',
+        pickupCity: 'Okara',
+        image: 'https://www.ccarprice.com/products/Suzuki-Alto-VXL-2019.jpg'
+    },
+    {
+        id: 4,
+        carName: 'Honda Civic',
+        rentRate: '900',
+        carModel: '1.5 RS Turbo',
+        modelYear: 2017,
+        transmissionType: 'Automatic',
+        engineCapacity: 1500,
+        seatingCapacity: 4,
+        carType: 'Sedan',
+        renter: 'Younis Khan',
+        pickupCity: 'Rawalpindi',
+        image: 'https://i.ytimg.com/vi/kFXq1-f6gck/maxresdefault.jpg'
+    },
+    {
+        id: 5,
+        carName: 'Suzuki Wagon R',
+        rentRate: '700',
+        carModel: 'VXL',
+        modelYear: 2017,
+        transmissionType: 'Manual',
+        engineCapacity: 1000,
+        seatingCapacity: 5,
+        carType: 'Hatchback',
+        renter: 'Mustafa Bashir',
+        pickupCity: 'Lahore',
+        image: 'https://upload.wikimedia.org/wikipedia/commons/3/31/2018_Suzuki_Karimun_Wagon_R_GL_%28front%29%2C_West_Surabaya.jpg'
+    },
+    {
+        id: 6,
+        carName: 'Honda City',
+        rentRate: '800',
+        carModel: '1.3 i-VTEC',
+        modelYear: 2017,
+        transmissionType: 'Manual',
+        engineCapacity: 1300,
+        seatingCapacity: 4,
+        carType: 'Sedan',
+        renter: 'Hassan Ali',
+        pickupCity: 'Karachi',
+        image: 'https://cdni.autocarindia.com/ExtraImages/20210406010759_2020_Honda_City_LT_1.jpg'
+    },
+];
+
+export default cars;
