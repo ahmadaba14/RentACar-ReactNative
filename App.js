@@ -7,6 +7,7 @@ import HomeScreen from './screens/HomeScreen';
 import RegisterScreen from './screens/RegisterScreen';
 import BottomNav from './navigation/BottomNav';
 import DrawerNav from './navigation/DrawerNav';
+import CarDetails from './screens/CarDetails';
 
 const Stack = createNativeStackNavigator();
 
@@ -17,6 +18,7 @@ export default function App() {
         <Stack.Screen options={{headerShown: false}} name="Login" component={LoginScreen} />
         <Stack.Screen options={{headerShown: false}} name="Register" component={RegisterScreen} />
         <Stack.Screen options={{headerShown: false}} name="DrawerNav" component={DrawerNav} />
+        <Stack.Screen options={{headerShown: false}} name="CarDetails" component={CarDetails} />
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -4,7 +4,7 @@ import 'firebase/compat/auth';
 import 'firebase/compat/firestore';
 import 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage'
-import { Firestore, getFirestore } from 'firebase/firestore';
+import { doc, Firestore, getFirestore } from 'firebase/firestore';
 import { Platform } from 'react-native';
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -59,10 +59,27 @@ export const createCarDocument = async (car) => {
   const carRef = firestore.collection('cars').doc();
 
   try {
-    carRef.set(car)
+    carRef.set(car, {
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    })
   } catch (error) {
     console.log("Error creating car", error)
   }
+}
+
+export const readCarDocuments = async () => {
+  var carList = [];
+
+  const snapshot = await firestore
+    .collection('cars')
+    .orderBy('createdAt')
+    .get();
+  
+  snapshot.forEach((document) => {
+    carList.push(document.data())
+  });
+
+  return carList;
 }
 
 export const uploadPhotoAsync = async (uri, imageName) => {

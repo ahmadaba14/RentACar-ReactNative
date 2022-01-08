@@ -1,11 +1,19 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Dimensions, FlatList, ScrollView, StyleSheet, Text, View } from 'react-native'
 import CarCard from '../components/CarCard'
 import HomeHeader from '../components/HomeHeader'
 import cars from '../consts/cars'
+import { readCarDocuments } from '../firebase'
 
 const HomeScreen = ({navigation}) => {
     const width = Dimensions.get('window').width / 2 - 20;
+
+    const [carsData, setCarsData] = useState([]);
+
+    readCarDocuments()
+        .then((carList) => {
+            setCarsData(carList);
+        })
 
     return (
         <View style={{flex: 1}}>
@@ -23,10 +31,11 @@ const HomeScreen = ({navigation}) => {
                             paddingBottom: 50,
                         }}
                         numColumns={2}
-                        data={cars}
+                        data={carsData}
                         keyExtractor={(item, index) => index.toString()}
                         renderItem={({item}) => (
                             <CarCard
+                                key={item.key}
                                 cardWidth={width}
                                 image={item.image}
                                 carName={item.carName}
