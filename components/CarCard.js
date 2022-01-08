@@ -1,9 +1,10 @@
-import React from 'react'
+import { useNavigation } from '@react-navigation/native'
+import React, {useState} from 'react'
 import { StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native'
 import { colors } from 'react-native-elements'
 
 const CarCard = ({
-    onPressCarCard,
+    key,
     carName,
     rentRate,
     carModel,
@@ -17,8 +18,30 @@ const CarCard = ({
     image,
     cardWidth
 }) => {
+    const navigation = useNavigation();
+    const [carsData, setcarsData] = useState({
+        key: key,
+        carName: carName,
+        rentRate: rentRate,
+        carModel: carModel,
+        modelYear: modelYear,
+        transmissionType: transmissionType,
+        engineCapacity: engineCapacity,
+        seatingCapacity: seatingCapacity,
+        carType: carType,
+        renter: renter,
+        pickupCity: pickupCity,
+        image: image,
+    })
+    
     return (
-        <TouchableOpacity>
+        <TouchableOpacity 
+            onPress={()=> {
+                navigation.navigate('CarDetails', {
+                    data: carsData
+                })
+            }}
+        >
             <View style={[styles.cardView, {width: cardWidth}]}>
                 <Image
                     style={styles.image}
