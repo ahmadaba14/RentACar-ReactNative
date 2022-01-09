@@ -5,7 +5,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import HomeScreen from '../screens/HomeScreen';
 import { Icon } from 'react-native-elements/dist/icons/Icon';
 import AddCar from '../screens/AddCar';
-import UserProfile from '../screens/UserProfile';
+import UserBookings from '../screens/UserBookings';
 
 const BottomTabs = createBottomTabNavigator();
 
@@ -59,16 +59,16 @@ const BottomNav = () => {
                 }
             />
             <BottomTabs.Screen
-                name='UserProfile'
-                component={UserProfile}
+                name='UserBookings'
+                component={UserBookings}
                 options={
                     {
                         headerShown: false,
-                        tabBarLabel: "Account",
+                        tabBarLabel: "My Bookings",
                         tabBarIcon: ({color, size}) => (
                             <Icon
-                                name = "person"
-                                type='material'
+                                name = "book-account"
+                                type='material-community'
                                 color={color}
                                 size={size} 
                             />

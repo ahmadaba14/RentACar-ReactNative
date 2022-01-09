@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { KeyboardAvoidingView, StyleSheet, Text, View, Image, Alert } from 'react-native'
+import { KeyboardAvoidingView, StyleSheet, Text, View, Image, Alert, Dimensions } from 'react-native'
 import { ScrollView, TextInput, TouchableOpacity } from 'react-native-gesture-handler'
 import HomeHeader from '../components/HomeHeader'
 import Constants from 'expo-constants'
@@ -7,24 +7,27 @@ import uuid from 'react-native-uuid'
 import * as ImagePicker from 'expo-image-picker'
 import firebase from 'firebase/compat/app';
 import 'firebase/storage';
-import { auth, createCarDocument, firestore, getUserNameByID, uploadPhotoAsync} from '../firebase';
+import { auth, createCarDocument, firestore, getCarSingleDocument, getUserNameByID, updateCarDocument, uploadPhotoAsync} from '../firebase';
+import EditCarHeader from '../components/EditCarHeader'
+import { useNavigation } from '@react-navigation/native'
 
-const AddCar = ({navigation}) => {
-    const [carName, setCarName] = useState('')
-    const [carModel, setCarModel] = useState('')
-    const [modelYear, setModelYear] = useState('')
-    const [transmissionType, setTransmissionType] = useState('')
-    const [engineCapacity, setEngineCapacity] = useState('')
-    const [seatingCapacity, setSeatingCapacity] = useState('')
-    const [carType, setCarType] = useState('')
-    const [pickupCity, setPickupCity] = useState('')
-    const [rentRate, setRentRate] = useState('')
-    const [username, setUsername] = useState('')
-    const [carId, setCarId] = useState('')
-    const [userId, setUserId] = useState('')
+const EditCar = ({route}) => {
+    const screenWidth = Dimensions.get('window').width;
+    const navigation = useNavigation();
+    const details = route.params.data;
 
-    const [image, setImage] = useState('')
-    const [remoteUri, setRemoteUri] = useState('')
+    const [carName, setCarName] = useState(details.carName)
+    const [carModel, setCarModel] = useState(details.carModel)
+    const [modelYear, setModelYear] = useState(details.modelYear)
+    const [transmissionType, setTransmissionType] = useState(details.transmissionType)
+    const [engineCapacity, setEngineCapacity] = useState(details.engineCapacity)
+    const [seatingCapacity, setSeatingCapacity] = useState(details.seatingCapacity)
+    const [carType, setCarType] = useState(details.carType)
+    const [pickupCity, setPickupCity] = useState(details.pickupCity)
+    const [rentRate, setRentRate] = useState(details.rentRate)
+
+    const [image, setImage] = useState(details.image)
+    const [remoteUri, setRemoteUri] = useState(details.image)
 
     const pickImage = async () => {
         if (Constants.platform.ios) {
@@ -48,61 +51,44 @@ const AddCar = ({navigation}) => {
         }
     }
 
-    const addCar = async () => {
+    var tempImg = '';
+
+    const editCar = async () => {
         try {
-            auth.onAuthStateChanged(async user => {
-                if (user) {
-                    const uid = user.uid;
-                    setUserId(uid);
-                    const imageId = uuid.v4();
-                    var tempImg = '';
-                    await uploadPhotoAsync(image, `cars/${imageId}`)
-                        .then((downloadUrl) => {
-                            tempImg = downloadUrl;
-                        })
-                    setRemoteUri(tempImg);
-                    
-                    var tempUser = '';
-                    await getUserNameByID(uid)
-                        .then((uname) => {
-                            tempUser = uname;
-                        })
-                    setUsername(tempUser);
+                const imageId = uuid.v4();
+                await uploadPhotoAsync(image, `cars/${imageId}`)
+                    .then((downloadUrl) => {
+                        tempImg = downloadUrl;
+                    })
 
-                    const car = {
-                        carName: carName,
-                        carModel: carModel,
-                        modelYear: modelYear,
-                        transmissionType: transmissionType,
-                        engineCapacity: engineCapacity,
-                        seatingCapacity: seatingCapacity,
-                        carType: carType,
-                        pickupCity: pickupCity,
-                        rentRate: rentRate,
-                        image: remoteUri,
-                        userId: uid,
-                        userName: username
-                    }
+                const carId = details.carId;
 
-                    var tempId = '';
-                    await createCarDocument(car)
-                        .then((docId) => {
-                            tempId = docId
-                        })
-                    setCarId(tempId);
-                    console.log(car.carName, ' Added Successfully ');
+                const car = {
+                    carName: carName,
+                    carModel: carModel,
+                    modelYear: modelYear,
+                    transmissionType: transmissionType,
+                    engineCapacity: engineCapacity,
+                    seatingCapacity: seatingCapacity,
+                    carType: carType,
+                    pickupCity: pickupCity,
+                    rentRate: rentRate,
+                    image: tempImg,
                 }
-            })
+
+                await updateCarDocument(carId, car);
+                console.log(car.carName, ' Updated Successfully ');
         }catch(error){
             alert(error.message);
         }
     }
 
-    const handleAddCar = async() => {
-        await addCar();
-        await navigation.push('CarDetailsOwner', {
+    const handleEditCar = async() => {
+        setRemoteUri(tempImg)
+        await editCar();
+        await navigation.push("CarDetailsOwner", {
             data: {
-                carId: carId,
+                carId: details.carId,
                 carName: carName,
                 rentRate: rentRate,
                 carModel: carModel,
@@ -111,38 +97,23 @@ const AddCar = ({navigation}) => {
                 engineCapacity: engineCapacity,
                 seatingCapacity: seatingCapacity,
                 carType: carType,
-                renter: username,
-                renterId: userId,
+                renter: details.renter,
+                renterId: details.renterId,
                 pickupCity: pickupCity,
-                image: image
+                image: remoteUri
             }
         })
-
-        setCarName('');
-        setCarModel('');
-        setModelYear('');
-        setTransmissionType('');
-        setEngineCapacity('');
-        setSeatingCapacity('');
-        setCarType('');
-        setPickupCity('');
-        setRentRate('');
-        setUsername('');
-        setCarId('');
-        setUserId('');
-        setImage('');
-        setRemoteUri('');
-
     }
 
     return (
         <View style={{flex: 1}}>
-            <HomeHeader navigation={navigation} />
+            <EditCarHeader 
+                navigation={navigation}
+                width={screenWidth}
+                route={details} 
+            />
             <ScrollView>
                 <KeyboardAvoidingView style={styles.container} behavior='padding'>
-                    <View style={{marginTop: 20}}>
-                        <Text style={styles.headerText}>ADD A CAR</Text>
-                    </View>
                     <View style={styles.inputContainer}>
                         <TextInput
                             placeholder='Enter Car Name'
@@ -216,10 +187,10 @@ const AddCar = ({navigation}) => {
                     </View>
                     <View style={styles.buttonContainer}>
                         <TouchableOpacity
-                            onPress={handleAddCar}
+                            onPress={handleEditCar}
                             style={styles.button}
                         >
-                            <Text style={styles.buttonText}>Add Car</Text>
+                            <Text style={styles.buttonText}>Edit Car</Text>
                         </TouchableOpacity>
                     </View>
                 </KeyboardAvoidingView>
@@ -228,13 +199,14 @@ const AddCar = ({navigation}) => {
     )
 }
 
-export default AddCar
+export default EditCar
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         justifyContent: 'flex-start',
-        alignItems: 'center'
+        alignItems: 'center',
+        marginVertical: 30
     },
     headerText:{
         fontWeight: '800',

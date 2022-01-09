@@ -4,7 +4,7 @@ import 'firebase/compat/auth';
 import 'firebase/compat/firestore';
 import 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage'
-import { doc, Firestore, getFirestore } from 'firebase/firestore';
+import { doc, Firestore, getDoc, getFirestore } from 'firebase/firestore';
 import { Platform } from 'react-native';
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -53,6 +53,23 @@ export const createUserDocument = async (user, uid) => {
   }
 }
 
+export const getUserNameByID = async (userId) => {
+  var username = '';
+
+  const userRef = firestore.collection('users').doc(userId);
+
+  const snap = await userRef.get();
+
+  if (snap.exists) {
+    try {
+      username = snap.get('name');
+      return username;
+    }catch (error) {
+      console.log("Error reading user", error);
+    }
+  }
+}
+
 export const createCarDocument = async (car) => {
   if (!car) return;
 
@@ -62,6 +79,7 @@ export const createCarDocument = async (car) => {
     carRef.set(car, {
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     })
+    return carRef.id;
   } catch (error) {
     console.log("Error creating car", error)
   }
@@ -72,14 +90,112 @@ export const readCarDocuments = async () => {
 
   const snapshot = await firestore
     .collection('cars')
-    .orderBy('createdAt')
     .get();
   
   snapshot.forEach((document) => {
-    carList.push(document.data())
+    carList.push({id: document.id,...document.data()})
   });
 
   return carList;
+}
+
+export const updateCarDocument = async (carId, car) => {
+  if (!car) return;
+
+  const carRef = firestore.collection('cars').doc(carId);
+
+  try {
+    carRef.update(car)
+  } catch (error) {
+    console.log("Error updating car", error)
+  }
+}
+
+export const deleteCarDocument = async (carId) => {
+  const carRef = firestore.collection('cars').doc(carId);
+
+  try {
+    carRef.delete();
+  } catch (error) {
+    console.log("Error deleting car", error)
+  }
+}
+
+export const getCarSingleDocument = async (carId) => {
+  const carRef = firestore.collection('cars').doc(carId);
+
+  const snap = await carRef.get();
+
+  if (snap.exists) {
+    try {
+      return snap;
+    }catch (error) {
+      console.log("Error reading car", error);
+    }
+  }
+}
+
+export const getCarNameByID = async (carId) => {
+  var carName = '';
+
+  const carRef = firestore.collection('cars').doc(carId);
+
+  const snap = await carRef.get();
+
+  if (snap.exists) {
+    try {
+      carName = snap.get('carName')
+      return carName;
+    }catch (error) {
+      console.log("Error reading car", error);
+    }
+  }
+}
+
+export const getCarImageByID = async (carId) => {
+  var carImage = '';
+
+  const carRef = firestore.collection('cars').doc(carId);
+
+  const snap = await carRef.get();
+
+  if (snap.exists) {
+    try {
+      carImage = snap.get('image');
+      return carImage;
+    }catch (error) {
+      console.log("Error reading car", error);
+    }
+  }
+}
+
+export const createBookingDocument = async (booking) => {
+  if (!booking) return;
+
+  const bookingRef = firestore.collection('bookings').doc();
+
+  try {
+    bookingRef.set(booking, {
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    })
+  } catch (error) {
+    console.log("Error booking car", error)
+  }
+}
+
+export const readBookingDocuments = async (uid) => {
+  var bookingList = [];
+
+  const snapshot = await firestore
+    .collection('bookings')
+    .where('userID', '==', uid)
+    .get();
+  
+  snapshot.forEach((document) => {
+    bookingList.push({id: document.id,...document.data()})
+  });
+
+  return bookingList;
 }
 
 export const uploadPhotoAsync = async (uri, imageName) => {

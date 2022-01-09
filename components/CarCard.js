@@ -2,9 +2,10 @@ import { useNavigation } from '@react-navigation/native'
 import React, {useState} from 'react'
 import { StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native'
 import { colors } from 'react-native-elements'
+import { auth } from '../firebase'
 
 const CarCard = ({
-    key,
+    carId,
     carName,
     rentRate,
     carModel,
@@ -14,13 +15,14 @@ const CarCard = ({
     seatingCapacity,
     carType,
     renter,
+    renterId,
     pickupCity,
     image,
     cardWidth
 }) => {
     const navigation = useNavigation();
     const [carsData, setcarsData] = useState({
-        key: key,
+        carId: carId,
         carName: carName,
         rentRate: rentRate,
         carModel: carModel,
@@ -30,17 +32,35 @@ const CarCard = ({
         seatingCapacity: seatingCapacity,
         carType: carType,
         renter: renter,
+        renterId: renterId,
         pickupCity: pickupCity,
         image: image,
     })
+
+    const handlePress = async() => {
+        try {
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    const uid = user.uid;
+                    if (uid==renterId){
+                        navigation.navigate('CarDetailsOwner', {
+                            data: carsData
+                        })
+                    } else {
+                        navigation.navigate('CarDetailsRenter', {
+                            data: carsData
+                        })
+                    }
+                }
+            })
+        }catch(error){
+            alert(error.message);
+        }
+    }
     
     return (
         <TouchableOpacity 
-            onPress={()=> {
-                navigation.navigate('CarDetails', {
-                    data: carsData
-                })
-            }}
+            onPress={handlePress}
         >
             <View style={[styles.cardView, {width: cardWidth}]}>
                 <Image
@@ -72,7 +92,7 @@ const styles = StyleSheet.create({
     },
     image: {
         flex: 1,
-        resizeMode: 'contain'
+        resizeMode: 'cover',
     },
     carName: {
         fontSize: 19,

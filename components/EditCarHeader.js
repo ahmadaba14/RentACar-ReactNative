@@ -1,38 +1,35 @@
-import { useNavigation } from '@react-navigation/native'
 import React from 'react'
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import { withBadge } from 'react-native-elements'
+import { StyleSheet, Text, View } from 'react-native'
 import { Icon } from 'react-native-elements/dist/icons/Icon'
 
-const HomeHeader = ({navigation}) => {
-    const nav = useNavigation();
-    const BadgeIcon = withBadge(0)(Icon);
+const EditCarHeader = ({navigation, width, route}) => {
+
     return (
-        <View style={styles.header}>
+        <View style={[styles.header, {width: width}]}>
             <View style={styles.icon}>
                 <Icon
                     type='material-community'
-                    name='menu'
+                    name='arrow-left'
                     color={'white'}
                     size={32}
                     onPress={() => {
-                        navigation.toggleDrawer()
+                        navigation.navigate('CarDetailsOwner', {
+                            data: route
+                        })
                     }} 
                 />
             </View>
             <View style={styles.headerItems}>
-                <TouchableOpacity onPress={() => nav.navigate("Home")}>
-                    <Text style={styles.homeText}>RENT A CAR</Text>
-                </TouchableOpacity>
+                <Text style={styles.homeText}>EDIT CAR</Text>
             </View>
             <View>
-
+                
             </View>
         </View>
     )
 }
 
-export default HomeHeader
+export default EditCarHeader
 
 const styles = StyleSheet.create({
     header: {
@@ -40,23 +37,27 @@ const styles = StyleSheet.create({
         backgroundColor: '#0782F9',
         height: 120,
         justifyContent: 'space-between',
-        borderRadius: 20
+        alignItems: 'center',
+        shadowColor: 'black',
+        shadowOpacity: 0.2,
+        shadowOffset: {height: 10},
+        zIndex: 999
     },
     icon: {
         alignItems: 'center',
         justifyContent: 'center',
-        marginLeft: 15,
+        marginLeft: 10,
         marginTop: 25
     },
     headerItems: {
         alignItems: 'center',
-        justifyContent: 'center',
-        marginRight: 40
+        justifyContent: 'center'
     },
     homeText: {
         color: 'white',
         fontSize: 20,
         fontWeight: '700',
         marginTop: 25,
+        marginRight: 50,
     }
 })

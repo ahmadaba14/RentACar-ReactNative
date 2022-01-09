@@ -6,6 +6,7 @@ import { Icon } from 'react-native-elements/dist/icons/Icon'
 import { colors } from 'react-native-elements'
 import AddCar from '../screens/AddCar'
 import Logout from '../components/Logout'
+import UserBookings from '../screens/UserBookings'
 
 const Drawer = createDrawerNavigator()
 
@@ -32,8 +33,8 @@ const DrawerNav = () => {
                 }}
             />
             <Drawer.Screen 
-                name = "AddCar"
-                component = {AddCar}
+                name = "BottomNav"
+                component = {BottomNav}
 
                 options={{
                     title: 'Add Car',
@@ -42,6 +43,23 @@ const DrawerNav = () => {
                         <Icon
                             type='material'
                             name='add'
+                            color={focused ? '#0782F9': colors.grey2}
+                            size={size} 
+                        />
+                    )
+                }}
+            />
+            <Drawer.Screen 
+                name = "BottomNav"
+                component = {BottomNav}
+
+                options={{
+                    title: 'My Bookings',
+                    headerShown: false,
+                    drawerIcon: ({focused, size}) => (
+                        <Icon
+                            name = "book-account"
+                            type='material-community'
                             color={focused ? '#0782F9': colors.grey2}
                             size={size} 
                         />

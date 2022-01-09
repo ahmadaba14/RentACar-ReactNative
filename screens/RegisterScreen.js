@@ -2,6 +2,7 @@ import { useNavigation } from '@react-navigation/native'
 import React, { useEffect, useState } from 'react'
 import { KeyboardAvoidingView, StyleSheet, Text, TextInput, TouchableOpacity, View, Image, ScrollView } from 'react-native'
 import { auth, createUserDocument } from '../firebase'
+import DateTimePicker from '@react-native-community/datetimepicker'
 
 const RegisterScreen = () => {
     const [name, setName] = useState('')
@@ -10,7 +11,8 @@ const RegisterScreen = () => {
     const [confirmPassword, setConfirmPassword] = useState('')
     const [phoneNumber, setPhoneNumber] = useState('')
     const [nationality, setNationality] = useState('')
-    const [dateOfBirth, setDateOfBirth] = useState('')
+    const [dateOfBirth, setDateOfBirth] = useState(new Date())
+    const [show, setShow] = useState(false)
 
     const navigation = useNavigation()
 
@@ -24,18 +26,38 @@ const RegisterScreen = () => {
         return unsubscribe
     }, [])
 
+    const onChangeDate = (event, selectedDate) => {
+        const currentDate = selectedDate || dateOfBirth;
+        setShow(Platform.OS === 'ios');
+        setDateOfBirth(currentDate);
+    }
+
     const handleSignUp = async () => {
         try {
-            const credential = await auth.createUserWithEmailAndPassword(email, password);
-            const uid = credential.user.uid;
-            const user = {
-                email: email,
-                name: name,
-                nationality: nationality,
-                phoneNumber: phoneNumber,
-                dateOfBirth: dateOfBirth,
-            };
-            await createUserDocument(user, uid);
+            if (password == confirmPassword){
+                const credential = await auth.createUserWithEmailAndPassword(email, password);
+                const uid = credential.user.uid;
+                const user = {
+                    email: email,
+                    name: name,
+                    nationality: nationality,
+                    phoneNumber: phoneNumber,
+                    dateOfBirth: dateOfBirth.toDateString(),
+                };
+                await createUserDocument(user, uid);
+
+                setName('')
+                setEmail('')
+                setPassword('')
+                setConfirmPassword('')
+                setPhoneNumber('')
+                setNationality('')
+                setDateOfBirth(new Date())
+                setShow(false)
+            }
+            else{
+                alert("Password and Confirm Password should be same")
+            }
         }catch(error){
             alert(error.message);
         }
@@ -84,6 +106,7 @@ const RegisterScreen = () => {
                     />
                     <TextInput
                         placeholder='Phone Number'
+                        keyboardType='numeric'
                         value={phoneNumber}
                         onChangeText={text => setPhoneNumber(text)}
                         style={styles.input}
@@ -94,11 +117,12 @@ const RegisterScreen = () => {
                         onChangeText={text => setNationality(text)}
                         style={styles.input}
                     />
-                    <TextInput
-                        placeholder='Date of Birth'
+                    <Text style={styles.dobText}>Date of Birth</Text>
+                    <DateTimePicker
+                        
                         value={dateOfBirth}
-                        onChangeText={text => setDateOfBirth(text)}
-                        style={styles.input}
+                        onChange={onChangeDate}
+                        maximumDate={new Date()}
                     />
                 </View>
 
@@ -139,6 +163,12 @@ const styles = StyleSheet.create({
     headerText:{
         fontWeight: '800',
         fontSize: 40,
+        color: '#0782F9'
+    },
+    dobText: {
+        marginTop: 15,
+        fontWeight: '400',
+        fontSize: 20,
         color: '#0782F9'
     },
     inputContainer: {

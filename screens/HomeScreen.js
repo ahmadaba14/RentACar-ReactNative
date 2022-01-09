@@ -32,10 +32,9 @@ const HomeScreen = ({navigation}) => {
                         }}
                         numColumns={2}
                         data={carsData}
-                        keyExtractor={(item, index) => index.toString()}
-                        renderItem={({item}) => (
+                        renderItem={({item, index}) => (
                             <CarCard
-                                key={item.key}
+                                carId={item.id}
                                 cardWidth={width}
                                 image={item.image}
                                 carName={item.carName}
@@ -47,7 +46,8 @@ const HomeScreen = ({navigation}) => {
                                 engineCapacity={item.engineCapacity}
                                 seatingCapacity={item.seatingCapacity}
                                 carType={item.carType}
-                                renter={item.renter}
+                                renter={item.userName}
+                                renterId={item.userId}
                             />
                         )}
                     />
@@ -71,5 +71,6 @@ const styles = StyleSheet.create({
     headerText: {
         fontWeight: '500',
         fontSize: 25,
+        color: '#0782F9'
     },
 })
