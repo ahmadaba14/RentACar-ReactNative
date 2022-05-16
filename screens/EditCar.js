@@ -30,23 +30,21 @@ const EditCar = ({route}) => {
     const [remoteUri, setRemoteUri] = useState(details.image)
 
     const pickImage = async () => {
-        if (Constants.platform.ios) {
-            const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-            if (status != "granted") {
-                alert("We need permissions to access your camera roll")
-            }
-            else {
-                let result = await ImagePicker.launchImageLibraryAsync({
-                    mediaTypes: ImagePicker.MediaTypeOptions.Images,
-                    allowsEditing: true,
-                    quality: 0.6,
-                    aspect: [4, 3]
-                });
-        
-                if (!result.cancelled){
-                    setImage(result.uri);
-                }
+        if (status != "granted") {
+            alert("We need permissions to access your camera roll")
+        }
+        else {
+            let result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                allowsEditing: true,
+                quality: 0.6,
+                aspect: [4, 3]
+            });
+    
+            if (!result.cancelled){
+                setImage(result.uri);
             }
         }
     }

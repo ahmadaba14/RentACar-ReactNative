@@ -1,6 +1,6 @@
 import { useNavigation } from '@react-navigation/native'
 import React, { useEffect, useState } from 'react'
-import { KeyboardAvoidingView, StyleSheet, Text, TextInput, TouchableOpacity, View, Image, ScrollView } from 'react-native'
+import { KeyboardAvoidingView, StyleSheet, Text, TextInput, TouchableOpacity, View, Image, ScrollView, Platform } from 'react-native'
 import { auth, createUserDocument } from '../firebase'
 import DateTimePicker from '@react-native-community/datetimepicker'
 
@@ -13,6 +13,7 @@ const RegisterScreen = () => {
     const [nationality, setNationality] = useState('')
     const [dateOfBirth, setDateOfBirth] = useState(new Date())
     const [show, setShow] = useState(false)
+    const [mode, setMode] = useState('date')
 
     const navigation = useNavigation()
 
@@ -25,6 +26,11 @@ const RegisterScreen = () => {
 
         return unsubscribe
     }, [])
+
+    const showDatePicker = () => {
+        setMode('date'); 
+        setShow(true)
+    }
 
     const onChangeDate = (event, selectedDate) => {
         const currentDate = selectedDate || dateOfBirth;
@@ -117,13 +123,35 @@ const RegisterScreen = () => {
                         onChangeText={text => setNationality(text)}
                         style={styles.input}
                     />
-                    <Text style={styles.dobText}>Date of Birth</Text>
-                    <DateTimePicker
-                        
-                        value={dateOfBirth}
-                        onChange={onChangeDate}
-                        maximumDate={new Date()}
-                    />
+                    {Platform.OS ==='ios' && (
+                        <View>
+                            <Text style={styles.dobText}>Date of Birth</Text>
+                            <DateTimePicker
+                                display='default'
+                                mode={mode}
+                                value={dateOfBirth}
+                                onChange={onChangeDate}
+                                maximumDate={new Date()}
+                            />
+                        </View>
+                    )}
+                    {Platform.OS === 'android' && (
+                        <View style={styles.dobContainer}>
+                            <Text style={styles.dobText}>Date of Birth</Text>
+                            <TouchableOpacity style={styles.dobButton} onPress={showDatePicker}>
+                                <Text>{dateOfBirth.toDateString()}</Text>
+                                {show && (
+                                    <DateTimePicker
+                                        display='default'
+                                        mode={mode}
+                                        value={dateOfBirth}
+                                        onChange={onChangeDate}
+                                        maximumDate={new Date()}
+                                    />
+                                )}
+                            </TouchableOpacity>
+                        </View>
+                    )}
                 </View>
 
                 <View style={styles.buttonContainer}>
@@ -155,6 +183,8 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
+        marginBottom: 50,
+        marginTop: 50
     },
     logo: {
         width: 150,
@@ -164,6 +194,20 @@ const styles = StyleSheet.create({
         fontWeight: '800',
         fontSize: 40,
         color: '#0782F9'
+    },
+    dobContainer: {
+        flexDirection: 'row', 
+        justifyContent: 'space-evenly',
+        alignItems: 'center'
+    },
+    dobButton: {
+        borderWidth: 2, 
+        borderColor: '#0782F9',
+        borderRadius: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 10,
+        marginTop: 15
     },
     dobText: {
         marginTop: 15,

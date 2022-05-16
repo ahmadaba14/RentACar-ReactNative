@@ -1,12 +1,10 @@
 import { useNavigation } from '@react-navigation/native'
 import React from 'react'
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import { withBadge } from 'react-native-elements'
 import { Icon } from 'react-native-elements/dist/icons/Icon'
 
 const HomeHeader = ({navigation}) => {
     const nav = useNavigation();
-    const BadgeIcon = withBadge(0)(Icon);
     return (
         <View style={styles.header}>
             <View style={styles.icon}>
@@ -40,7 +38,8 @@ const styles = StyleSheet.create({
         backgroundColor: '#0782F9',
         height: 120,
         justifyContent: 'space-between',
-        borderRadius: 20
+        borderBottomEndRadius: 20,
+        borderBottomStartRadius: 20
     },
     icon: {
         alignItems: 'center',

@@ -33,8 +33,8 @@ const DrawerNav = () => {
                 }}
             />
             <Drawer.Screen 
-                name = "BottomNav"
-                component = {BottomNav}
+                name = "AddCar"
+                component = {AddCar}
 
                 options={{
                     title: 'Add Car',
@@ -50,8 +50,8 @@ const DrawerNav = () => {
                 }}
             />
             <Drawer.Screen 
-                name = "BottomNav"
-                component = {BottomNav}
+                name = "UserBookings"
+                component = {UserBookings}
 
                 options={{
                     title: 'My Bookings',

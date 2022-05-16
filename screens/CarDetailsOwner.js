@@ -4,7 +4,7 @@ import { Dimensions, StyleSheet, Text, View, Image, TouchableOpacity, Alert } fr
 import { colors } from 'react-native-elements';
 import { ScrollView } from 'react-native-gesture-handler';
 import DetailsHeader from '../components/DetailsHeader';
-import { deleteCarDocument } from '../firebase';
+import { deleteBookingDocuments, deleteCarDocument } from '../firebase';
 
 const CarDetailsOwner = ({route}) => {
     const details = route.params.data;
@@ -22,6 +22,7 @@ const CarDetailsOwner = ({route}) => {
                         text: 'Yes',
                         onPress: async () => {
                             await deleteCarDocument(carId);
+                            await deleteBookingDocuments(carId);
                             navigation.navigate('BottomNav');
                             console.log("Document Deleted Successfully");
                         }

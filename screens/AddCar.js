@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
-import { KeyboardAvoidingView, StyleSheet, Text, View, Image, Alert } from 'react-native'
-import { ScrollView, TextInput, TouchableOpacity } from 'react-native-gesture-handler'
+import { KeyboardAvoidingView, StyleSheet, Text, View, Image, Alert, ScrollView, TextInput, TouchableOpacity } from 'react-native'
 import HomeHeader from '../components/HomeHeader'
 import Constants from 'expo-constants'
 import uuid from 'react-native-uuid'
@@ -27,23 +26,21 @@ const AddCar = ({navigation}) => {
     const [remoteUri, setRemoteUri] = useState('')
 
     const pickImage = async () => {
-        if (Constants.platform.ios) {
-            const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-            if (status != "granted") {
-                alert("We need permissions to access your camera roll")
-            }
-            else {
-                let result = await ImagePicker.launchImageLibraryAsync({
-                    mediaTypes: ImagePicker.MediaTypeOptions.Images,
-                    allowsEditing: true,
-                    quality: 0.6,
-                    aspect: [4, 3]
-                });
-        
-                if (!result.cancelled){
-                    setImage(result.uri);
-                }
+        if (status != "granted") {
+            alert("We need permissions to access your camera roll")
+        }
+        else {
+            let result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                allowsEditing: true,
+                quality: 0.6,
+                aspect: [4, 3]
+            });
+    
+            if (!result.cancelled){
+                setImage(result.uri);
             }
         }
     }
