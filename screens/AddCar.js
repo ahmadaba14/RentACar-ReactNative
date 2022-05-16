@@ -1,13 +1,13 @@
 import React, { useState } from 'react'
-import { KeyboardAvoidingView, StyleSheet, Text, View, Image, Alert } from 'react-native'
-import { ScrollView, TextInput, TouchableOpacity } from 'react-native-gesture-handler'
+import { KeyboardAvoidingView, StyleSheet, Text, View, Image, Alert, ScrollView, TextInput, TouchableOpacity } from 'react-native'
 import HomeHeader from '../components/HomeHeader'
 import Constants from 'expo-constants'
 import uuid from 'react-native-uuid'
 import * as ImagePicker from 'expo-image-picker'
 import firebase from 'firebase/compat/app';
 import 'firebase/storage';
-import { auth, createCarDocument, firestore, getUserNameByID, uploadPhotoAsync} from '../firebase';
+import { auth, uploadPhotoAsync} from '../firebase';
+import client from '../api/client'
 
 const AddCar = ({navigation}) => {
     const [carName, setCarName] = useState('')
@@ -16,7 +16,7 @@ const AddCar = ({navigation}) => {
     const [transmissionType, setTransmissionType] = useState('')
     const [engineCapacity, setEngineCapacity] = useState('')
     const [seatingCapacity, setSeatingCapacity] = useState('')
-    const [carType, setCarType] = useState('')
+    const [mileage, setMileage] = useState('')
     const [pickupCity, setPickupCity] = useState('')
     const [rentRate, setRentRate] = useState('')
     const [username, setUsername] = useState('')
@@ -27,23 +27,21 @@ const AddCar = ({navigation}) => {
     const [remoteUri, setRemoteUri] = useState('')
 
     const pickImage = async () => {
-        if (Constants.platform.ios) {
-            const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-            if (status != "granted") {
-                alert("We need permissions to access your camera roll")
-            }
-            else {
-                let result = await ImagePicker.launchImageLibraryAsync({
-                    mediaTypes: ImagePicker.MediaTypeOptions.Images,
-                    allowsEditing: true,
-                    quality: 0.6,
-                    aspect: [4, 3]
-                });
-        
-                if (!result.cancelled){
-                    setImage(result.uri);
-                }
+        if (status != "granted") {
+            alert("We need permissions to access your camera roll")
+        }
+        else {
+            let result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                allowsEditing: true,
+                quality: 0.6,
+                aspect: [4, 3]
+            });
+    
+            if (!result.cancelled){
+                setImage(result.uri);
             }
         }
     }
@@ -61,35 +59,32 @@ const AddCar = ({navigation}) => {
                             tempImg = downloadUrl;
                         })
                     setRemoteUri(tempImg);
-                    
-                    var tempUser = '';
-                    await getUserNameByID(uid)
-                        .then((uname) => {
-                            tempUser = uname;
-                        })
-                    setUsername(tempUser);
+
+                    const res = await client.get(`/users/${uid}`);
+                    setUsername(res.data.name);
+
+                    const tempCarId = uuid.v4();
+                    setCarId(tempCarId);
 
                     const car = {
-                        carName: carName,
-                        carModel: carModel,
+                        _id: carId,
+                        owner: uid,
+                        ownerName: username,
+                        name: carName,
+                        model: carModel,
                         modelYear: modelYear,
+                        mileage: mileage,
                         transmissionType: transmissionType,
-                        engineCapacity: engineCapacity,
-                        seatingCapacity: seatingCapacity,
-                        carType: carType,
+                        capacity: engineCapacity,
+                        seats: seatingCapacity,
                         pickupCity: pickupCity,
-                        rentRate: rentRate,
-                        image: remoteUri,
-                        userId: uid,
-                        userName: username
+                        rate: rentRate,
+                        picture: remoteUri,
                     }
 
-                    var tempId = '';
-                    await createCarDocument(car)
-                        .then((docId) => {
-                            tempId = docId
-                        })
-                    setCarId(tempId);
+                    await client.post('/cars', {
+                        ...car,
+                    });
                     console.log(car.carName, ' Added Successfully ');
                 }
             })
@@ -110,7 +105,7 @@ const AddCar = ({navigation}) => {
                 transmissionType: transmissionType,
                 engineCapacity: engineCapacity,
                 seatingCapacity: seatingCapacity,
-                carType: carType,
+                mileage: mileage,
                 renter: username,
                 renterId: userId,
                 pickupCity: pickupCity,
@@ -124,7 +119,7 @@ const AddCar = ({navigation}) => {
         setTransmissionType('');
         setEngineCapacity('');
         setSeatingCapacity('');
-        setCarType('');
+        setMileage('');
         setPickupCity('');
         setRentRate('');
         setUsername('');
@@ -184,9 +179,9 @@ const AddCar = ({navigation}) => {
                             style={styles.input}
                         />
                         <TextInput
-                            placeholder='Enter Car Type'
-                            value={carType}
-                            onChangeText={text => setCarType(text)}
+                            placeholder='Enter Mileage'
+                            value={mileage}
+                            onChangeText={text => setMileage(text)}
                             style={styles.input}
                         />
                         <TextInput

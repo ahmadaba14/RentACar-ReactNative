@@ -198,6 +198,13 @@ export const readBookingDocuments = async (uid) => {
   return bookingList;
 }
 
+export const deleteBookingDocuments = async (carId) => {
+  await firestore
+    .collection('bookings')
+    .where('carId', '==', carId)
+    .delete();
+}
+
 export const uploadPhotoAsync = async (uri, imageName) => {
   const storage = getStorage();
   const reference = ref(storage, imageName);

@@ -1,12 +1,12 @@
 {
   "expo": {
-    "name": "RentACar",
+    "name": "Rent A Car",
     "slug": "RentACar",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./images/RentACarIcon.png",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./images/SplashScreen.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -21,12 +21,14 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./images/RentACarIcon.png",
         "backgroundColor": "#FFFFFF"
-      }
+      },
+      "package": "com.rentACar.rentACarApp",
+      "versionCode": 1
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./images/RentACarIcon.png"
     }
   }
 }

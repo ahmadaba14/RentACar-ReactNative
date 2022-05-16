@@ -2,6 +2,7 @@ import { useNavigation } from '@react-navigation/native'
 import React, {useEffect, useState } from 'react'
 import { KeyboardAvoidingView, StyleSheet, Text, TextInput, TouchableOpacity, View, Image } from 'react-native'
 import { auth } from '../firebase'
+import client from '../api/client'
 
 const LoginScreen = () => {
     const [email, setEmail] = useState('')
@@ -19,7 +20,7 @@ const LoginScreen = () => {
         return unsubscribe
     }, [])
 
-    const handleLogin = () => {
+    const handleLogin = async() => {
         auth
           .signInWithEmailAndPassword(email, password)
           .then(userCredentials => {
@@ -27,6 +28,10 @@ const LoginScreen = () => {
               console.log('Logged in with ', user.email);
           })
           .catch(error => alert(error.message))
+
+        await client.post('/users/login', {
+            email: email,
+        });
 
         setEmail('');
         setPassword('');

@@ -57,7 +57,8 @@ const styles = StyleSheet.create({
     dataContainer: {
         justifyContent: 'center',
         position: 'absolute',
-        right: 40,
+        right: 10,
+        left: 150,
     },
     carName: {
         fontSize: 19,

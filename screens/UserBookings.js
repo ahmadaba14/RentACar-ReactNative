@@ -1,7 +1,8 @@
 import { useNavigation } from '@react-navigation/native';
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Dimensions, StyleSheet, Text, View } from 'react-native'
 import { FlatList } from 'react-native-gesture-handler';
+import client from '../api/client';
 import BookingCard from '../components/BookingCard';
 import HomeHeader from '../components/HomeHeader';
 import { auth, readBookingDocuments } from '../firebase';
@@ -11,17 +12,23 @@ const UserBookings = (navigation) => {
 
     const [bookingsData, setBookingsData] = useState([]);
 
-    auth.onAuthStateChanged(async user => {
-        if (user) {
-            const uid = user.uid;
-            var tempList = [];
-            await readBookingDocuments(uid)
-                .then((bList) => {
-                    tempList = bList
-                })
-            setBookingsData(tempList)
-        }
-    })
+    useEffect(() => {
+        auth.onAuthStateChanged(async user => {
+            if (user) {
+                const uid = user.uid;
+                var tempList = [];
+                await client.get('/bookings/')
+                    .then(response => {
+                        response.data.forEach(booking => {
+                            if (booking.renter === uid) {
+                                tempList.push(booking);
+                            }
+                        });
+                    });
+                setBookingsData(tempList)
+            }
+        })
+    }, []);
 
     return (
         <View style={{flex: 1}}>
@@ -40,15 +47,15 @@ const UserBookings = (navigation) => {
                     keyExtractor={(item, index) => index.toString()}
                     renderItem={({item}) => (
                         <BookingCard
-                            userId={item.userId}
-                            carId={item.carId}
-                            from={item.bookedTimeSlots.from}
-                            to={item.bookedTimeSlots.to}
+                            userId={item.renter}
+                            carId={item.car}
+                            from={item.from}
+                            to={item.to}
                             totalAmount={item.totalAmount}
-                            totalDays={item.totalDays}
+                            totalDays={item.totalHours}
                             cardWidth={width}
                             carName={item.carName}
-                            carImage={item.carImage}
+                            carImage={item.carPicture}
                         />
                     )}
                 />

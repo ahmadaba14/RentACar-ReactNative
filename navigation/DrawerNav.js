@@ -7,6 +7,7 @@ import { colors } from 'react-native-elements'
 import AddCar from '../screens/AddCar'
 import Logout from '../components/Logout'
 import UserBookings from '../screens/UserBookings'
+import AddComplaint from '../screens/AddComplaint'
 
 const Drawer = createDrawerNavigator()
 
@@ -33,8 +34,8 @@ const DrawerNav = () => {
                 }}
             />
             <Drawer.Screen 
-                name = "BottomNav"
-                component = {BottomNav}
+                name = "AddCar"
+                component = {AddCar}
 
                 options={{
                     title: 'Add Car',
@@ -50,8 +51,8 @@ const DrawerNav = () => {
                 }}
             />
             <Drawer.Screen 
-                name = "BottomNav"
-                component = {BottomNav}
+                name = "UserBookings"
+                component = {UserBookings}
 
                 options={{
                     title: 'My Bookings',
@@ -59,6 +60,23 @@ const DrawerNav = () => {
                     drawerIcon: ({focused, size}) => (
                         <Icon
                             name = "book-account"
+                            type='material-community'
+                            color={focused ? '#0782F9': colors.grey2}
+                            size={size} 
+                        />
+                    )
+                }}
+            />
+            <Drawer.Screen 
+                name = "AddComplaint"
+                component = {AddComplaint}
+
+                options={{
+                    title: 'Submit a Complaint',
+                    headerShown: false,
+                    drawerIcon: ({focused, size}) => (
+                        <Icon
+                            name='alert-circle-outline'
                             type='material-community'
                             color={focused ? '#0782F9': colors.grey2}
                             size={size} 

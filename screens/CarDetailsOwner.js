@@ -4,7 +4,8 @@ import { Dimensions, StyleSheet, Text, View, Image, TouchableOpacity, Alert } fr
 import { colors } from 'react-native-elements';
 import { ScrollView } from 'react-native-gesture-handler';
 import DetailsHeader from '../components/DetailsHeader';
-import { deleteCarDocument } from '../firebase';
+import { deleteBookingDocuments, deleteCarDocument } from '../firebase';
+import client from '../api/client';
 
 const CarDetailsOwner = ({route}) => {
     const details = route.params.data;
@@ -21,7 +22,8 @@ const CarDetailsOwner = ({route}) => {
                     {
                         text: 'Yes',
                         onPress: async () => {
-                            await deleteCarDocument(carId);
+                            await client.delete(`/cars/${carId}`);
+                            await client.delete(`/bookings/${carId}`);
                             navigation.navigate('BottomNav');
                             console.log("Document Deleted Successfully");
                         }
@@ -77,8 +79,8 @@ const CarDetailsOwner = ({route}) => {
                         <Text style={styles.detailsBodyText}>{details.seatingCapacity}</Text>
                     </View>
                     <View style={styles.detailsBodyTextContainer}>
-                        <Text style={[styles.detailsBodyText, {fontWeight: '700'}]}>Car Type</Text>
-                        <Text style={styles.detailsBodyText}>{details.carType}</Text>
+                        <Text style={[styles.detailsBodyText, {fontWeight: '700'}]}>Mileage</Text>
+                        <Text style={styles.detailsBodyText}>{details.mileage}</Text>
                     </View>
                 </View>
                 <View style={styles.detailsGreyContainer}>
@@ -163,7 +165,6 @@ const styles = StyleSheet.create({
         padding: 15,
         borderRadius: 30,
         alignItems: 'center',
-        bottom: 60,
         marginRight: 30,
         shadowColor: 'black',
         shadowOpacity: 0.2,
@@ -177,7 +178,6 @@ const styles = StyleSheet.create({
         padding: 15,
         borderRadius: 30,
         alignItems: 'center',
-        bottom: 60,
         shadowColor: 'black',
         shadowOpacity: 0.2,
         shadowOffset: {height: -2},

@@ -1,10 +1,12 @@
 import { useNavigation } from '@react-navigation/native'
 import React, { useEffect, useState } from 'react'
-import { KeyboardAvoidingView, Dimensions, StyleSheet, Text, View, Platform } from 'react-native'
-import { ScrollView, TouchableOpacity } from 'react-native-gesture-handler'
+import { KeyboardAvoidingView, Dimensions, StyleSheet, Text, View, Platform, TouchableOpacity } from 'react-native'
+import { ScrollView } from 'react-native-gesture-handler'
 import DateTimePicker from '@react-native-community/datetimepicker'
 import BookHeader from '../components/BookHeader'
 import { auth, createBookingDocument, getCarImageByID, getCarNameByID } from '../firebase'
+import client from '../api/client'
+import uuid from 'react-native-uuid'
 
 const BookCar = ({route}) => {
     const screenWidth = Dimensions.get('window').width;
@@ -12,28 +14,40 @@ const BookCar = ({route}) => {
     const details = route.params.data;
 
     const [pickupDate, setPickupDate] = useState(new Date());
+    const [pickupShow, setPickupShow] = useState(false)
+    const [pickupMode, setPickupMode] = useState('date')
     const [returnDate, setReturnDate] = useState(new Date());
-    const [show, setShow] = useState(false)
+    const [returnShow, setReturnShow] = useState(false)
+    const [returnMode, setReturnMode] = useState('date')
     const [totalRent, setTotalRent] = useState(details.rentRate);
     const [totalDays, setTotalDays] = useState(0);
     const [userid, setUserid] = useState('');
-    const [carName, setCarName] = useState('');
-    const [carImg, setCarImg] = useState('');
+    const [show, setShow] = useState(false)
 
     useEffect(() => {
         setTotalRent((totalDays + 1) * details.rentRate);
     }, [totalDays]);
 
+    const showPickupDatePicker = () => {
+        setPickupMode('date'); 
+        setPickupShow(true)
+    }
+
+    const showReturnDatePicker = () => {
+        setReturnMode('date'); 
+        setReturnShow(true)
+    }
+
     const onChangePickupDate = (event, selectedDate) => {
         const currentDate = selectedDate || pickupDate;
-        setShow(Platform.OS === 'ios');
+        setPickupShow(Platform.OS === 'ios');
         setPickupDate(currentDate);
     }
 
     const onChangeReturnDate = (event, selectedDate) => {
         setTotalRent(details.rentRate);
         const currentDate = selectedDate || returnDate;
-        setShow(Platform.OS === 'ios');
+        setReturnShow(Platform.OS === 'ios');
         setReturnDate(currentDate);
 
         setTotalDays(Math.ceil((currentDate - pickupDate) / (1000 * 60 * 60 * 24)));
@@ -48,33 +62,31 @@ const BookCar = ({route}) => {
                     const carId = details.carId;
 
                     var tempName = '';
-                    await getCarNameByID(carId)
-                        .then((cname) => {
-                            tempName = cname;
-                        })
+                    const response = await client.get('/cars/' + carId);
+                    tempName = response.data.name;
+
                     console.log('Name:', tempName)
 
                     var tempImg = '';
-                    await getCarImageByID(carId)
-                        .then((cimg) => {
-                            tempImg = cimg
-                        })
+
+                    tempImg = response.data.picture;
                     console.log('IMG: ', tempImg);
-                    console.log('ID', carId);
+                    console.log('ID: ', carId);
+
+                    const bookingID = uuid.v4();
 
                     const booking = {
-                        carId: carId,
-                        userID: uid,
-                        bookedTimeSlots: {
-                            from: pickupDate.toDateString(),
-                            to: returnDate.toDateString()
-                        },
+                        _id: bookingID,
+                        car: carId,
+                        renter: uid,
+                        from: pickupDate.toDateString(),
+                        to: returnDate.toDateString(),
                         totalAmount: totalRent,
-                        totalDays: totalDays,
-                        carName: tempName,
-                        carImage: tempImg
+                        totalHours: totalDays,
                     }
-                    createBookingDocument(booking);
+                    await client.post('/bookings/', {
+                        ...booking,
+                    });
 
                     console.log('Car booked successfully from ', booking.bookedTimeSlots.from, ' to ', booking.bookedTimeSlots.to);
                 }
@@ -101,20 +113,58 @@ const BookCar = ({route}) => {
             <ScrollView>
                 <KeyboardAvoidingView style={styles.formContainer} behavior='padding'>
                     <View style={styles.inputContainer}>
-                        <Text style={styles.headerText}>Pick Up Date</Text>
-                        <DateTimePicker
-                            style={{marginBottom: 20}}
-                            value={pickupDate}
-                            onChange={onChangePickupDate}
-                            minimumDate={new Date()}
-                        />
-                        <Text style={styles.headerText}>Return Date</Text>
-                        <DateTimePicker
-                            style={{marginBottom: 20}}
-                            value={returnDate}
-                            onChange={onChangeReturnDate}
-                            minimumDate={pickupDate}
-                        />
+                        {Platform.OS === 'ios' && (
+                            <View>
+                                <Text style={styles.headerText}>Pick Up Date</Text>
+                                <DateTimePicker
+                                    style={{marginBottom: 20}}
+                                    value={pickupDate}
+                                    onChange={onChangePickupDate}
+                                    minimumDate={new Date()}
+                                />
+                                <Text style={styles.headerText}>Return Date</Text>
+                                <DateTimePicker
+                                    style={{marginBottom: 20}}
+                                    value={returnDate}
+                                    onChange={onChangeReturnDate}
+                                    minimumDate={pickupDate}
+                                />
+                            </View>
+                        )}
+                        {Platform.OS === 'android' && (
+                            <View>
+                                <View style={styles.dobContainer}>
+                                    <Text style={styles.dobText}>Pick Up Date</Text>
+                                    <TouchableOpacity style={styles.dobButton} onPress={showPickupDatePicker}>
+                                        <Text>{pickupDate.toDateString()}</Text>
+                                        {pickupShow && (
+                                            <DateTimePicker
+                                                display='default'
+                                                mode={pickupMode}
+                                                value={pickupDate}
+                                                onChange={onChangePickupDate}
+                                                minimumDate={new Date()}
+                                            />
+                                        )}
+                                    </TouchableOpacity>
+                                </View>
+                                <View style={styles.dobContainer}>
+                                    <Text style={styles.dobText}>Return Date</Text>
+                                    <TouchableOpacity style={styles.dobButton} onPress={showReturnDatePicker}>
+                                        <Text>{returnDate.toDateString()}</Text>
+                                        {returnShow && (
+                                            <DateTimePicker
+                                                display='default'
+                                                mode={returnMode}
+                                                value={returnDate}
+                                                onChange={onChangeReturnDate}
+                                                minimumDate={pickupDate}
+                                            />
+                                        )}
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        )}
                         <Text style={styles.totalRentText}>Total Rent: Rs. {totalRent}</Text>
                     </View>
                     <View style={styles.buttonContainer}>
@@ -123,6 +173,18 @@ const BookCar = ({route}) => {
                             style={styles.button}
                         >
                             <Text style={styles.buttonText}>Book Car</Text>
+                        </TouchableOpacity>
+                    </View>
+                    <View style={styles.buttonContainer}>
+                        <TouchableOpacity
+                            onPress={() => {
+                                navigation.navigate('NegotiationBiddingRenter', {
+                                    data: details
+                                });
+                            }}
+                            style={styles.negotiateButton}
+                        >
+                            <Text style={styles.buttonText}>Negotiate</Text>
                         </TouchableOpacity>
                     </View>
                 </KeyboardAvoidingView>
@@ -148,6 +210,27 @@ const styles = StyleSheet.create({
         fontSize: 20,
         color: '#0782F9',
     },
+    dobText: {
+        marginTop: 15,
+        marginRight: 30,
+        fontWeight: '400',
+        fontSize: 20,
+        color: '#0782F9'
+    },
+    dobContainer: {
+        flexDirection: 'row', 
+        justifyContent: 'space-evenly',
+        alignItems: 'center'
+    },
+    dobButton: {
+        borderWidth: 2, 
+        borderColor: '#0782F9',
+        borderRadius: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 10,
+        marginTop: 15
+    },
     totalRentText: {
         fontWeight: '800',
         fontSize: 25,
@@ -169,6 +252,14 @@ const styles = StyleSheet.create({
     },
     button: {
         backgroundColor: '#0782F9',
+        width: 300,
+        padding: 15,
+        borderRadius: 10,
+        alignItems: 'center',
+        marginTop: 15
+    },
+    negotiateButton: {
+        backgroundColor: '#20da0a',
         width: 300,
         padding: 15,
         borderRadius: 10,

@@ -1,15 +1,16 @@
 import React, { useState } from 'react'
-import { KeyboardAvoidingView, StyleSheet, Text, View, Image, Alert, Dimensions } from 'react-native'
-import { ScrollView, TextInput, TouchableOpacity } from 'react-native-gesture-handler'
+import { KeyboardAvoidingView, StyleSheet, Text, View, Image, Alert, Dimensions, TouchableOpacity } from 'react-native'
+import { ScrollView, TextInput } from 'react-native-gesture-handler'
 import HomeHeader from '../components/HomeHeader'
 import Constants from 'expo-constants'
 import uuid from 'react-native-uuid'
 import * as ImagePicker from 'expo-image-picker'
 import firebase from 'firebase/compat/app';
 import 'firebase/storage';
-import { auth, createCarDocument, firestore, getCarSingleDocument, getUserNameByID, updateCarDocument, uploadPhotoAsync} from '../firebase';
+import {uploadPhotoAsync} from '../firebase';
 import EditCarHeader from '../components/EditCarHeader'
 import { useNavigation } from '@react-navigation/native'
+import client from '../api/client'
 
 const EditCar = ({route}) => {
     const screenWidth = Dimensions.get('window').width;
@@ -18,35 +19,34 @@ const EditCar = ({route}) => {
 
     const [carName, setCarName] = useState(details.carName)
     const [carModel, setCarModel] = useState(details.carModel)
-    const [modelYear, setModelYear] = useState(details.modelYear)
+    const [modelYear, setModelYear] = useState(details.modelYear.toString())
     const [transmissionType, setTransmissionType] = useState(details.transmissionType)
-    const [engineCapacity, setEngineCapacity] = useState(details.engineCapacity)
-    const [seatingCapacity, setSeatingCapacity] = useState(details.seatingCapacity)
-    const [carType, setCarType] = useState(details.carType)
+    const [engineCapacity, setEngineCapacity] = useState(details.engineCapacity.toString())
+    const [seatingCapacity, setSeatingCapacity] = useState(details.seatingCapacity.toString())
+    const [mileage, setMileage] = useState(details.mileage.toString())
     const [pickupCity, setPickupCity] = useState(details.pickupCity)
-    const [rentRate, setRentRate] = useState(details.rentRate)
+    const [rentRate, setRentRate] = useState(details.rentRate.toString())
 
     const [image, setImage] = useState(details.image)
+
     const [remoteUri, setRemoteUri] = useState(details.image)
 
     const pickImage = async () => {
-        if (Constants.platform.ios) {
-            const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-            if (status != "granted") {
-                alert("We need permissions to access your camera roll")
-            }
-            else {
-                let result = await ImagePicker.launchImageLibraryAsync({
-                    mediaTypes: ImagePicker.MediaTypeOptions.Images,
-                    allowsEditing: true,
-                    quality: 0.6,
-                    aspect: [4, 3]
-                });
-        
-                if (!result.cancelled){
-                    setImage(result.uri);
-                }
+        if (status != "granted") {
+            alert("We need permissions to access your camera roll")
+        }
+        else {
+            let result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                allowsEditing: true,
+                quality: 0.6,
+                aspect: [4, 3]
+            });
+    
+            if (!result.cancelled){
+                setImage(result.uri);
             }
         }
     }
@@ -64,19 +64,21 @@ const EditCar = ({route}) => {
                 const carId = details.carId;
 
                 const car = {
-                    carName: carName,
-                    carModel: carModel,
+                    name: carName,
+                    model: carModel,
                     modelYear: modelYear,
                     transmissionType: transmissionType,
-                    engineCapacity: engineCapacity,
-                    seatingCapacity: seatingCapacity,
-                    carType: carType,
+                    capacity: engineCapacity,
+                    seats: seatingCapacity,
+                    mileage: mileage,
                     pickupCity: pickupCity,
-                    rentRate: rentRate,
+                    rate: rentRate,
                     image: tempImg,
                 }
 
-                await updateCarDocument(carId, car);
+                await client.put(`/cars/${carId}`, {
+                    ...car,
+                });
                 console.log(car.carName, ' Updated Successfully ');
         }catch(error){
             alert(error.message);
@@ -96,7 +98,7 @@ const EditCar = ({route}) => {
                 transmissionType: transmissionType,
                 engineCapacity: engineCapacity,
                 seatingCapacity: seatingCapacity,
-                carType: carType,
+                mileage: mileage,
                 renter: details.renter,
                 renterId: details.renterId,
                 pickupCity: pickupCity,
@@ -155,9 +157,9 @@ const EditCar = ({route}) => {
                             style={styles.input}
                         />
                         <TextInput
-                            placeholder='Enter Car Type'
-                            value={carType}
-                            onChangeText={text => setCarType(text)}
+                            placeholder='Enter Mileage'
+                            value={mileage}
+                            onChangeText={text => setMileage(text)}
                             style={styles.input}
                         />
                         <TextInput

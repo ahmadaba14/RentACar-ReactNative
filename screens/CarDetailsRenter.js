@@ -50,8 +50,8 @@ const CarDetailsRenter = ({route}) => {
                         <Text style={styles.detailsBodyText}>{details.seatingCapacity}</Text>
                     </View>
                     <View style={styles.detailsBodyTextContainer}>
-                        <Text style={[styles.detailsBodyText, {fontWeight: '700'}]}>Car Type</Text>
-                        <Text style={styles.detailsBodyText}>{details.carType}</Text>
+                        <Text style={[styles.detailsBodyText, {fontWeight: '700'}]}>Mileage</Text>
+                        <Text style={styles.detailsBodyText}>{details.mileage}</Text>
                     </View>
                 </View>
                 <View style={styles.detailsGreyContainer}>

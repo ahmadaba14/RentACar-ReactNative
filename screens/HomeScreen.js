@@ -1,5 +1,6 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Dimensions, FlatList, ScrollView, StyleSheet, Text, View } from 'react-native'
+import client from '../api/client'
 import CarCard from '../components/CarCard'
 import HomeHeader from '../components/HomeHeader'
 import cars from '../consts/cars'
@@ -9,11 +10,13 @@ const HomeScreen = ({navigation}) => {
     const width = Dimensions.get('window').width / 2 - 20;
 
     const [carsData, setCarsData] = useState([]);
-
-    readCarDocuments()
-        .then((carList) => {
-            setCarsData(carList);
+    
+    useEffect(() => {
+        client.get('/cars')
+        .then((response) => {
+            setCarsData(response.data);
         })
+    }, []);
 
     return (
         <View style={{flex: 1}}>
@@ -34,20 +37,20 @@ const HomeScreen = ({navigation}) => {
                         data={carsData}
                         renderItem={({item, index}) => (
                             <CarCard
-                                carId={item.id}
+                                carId={item._id}
                                 cardWidth={width}
-                                image={item.image}
-                                carName={item.carName}
-                                rentRate={item.rentRate}
+                                image={item.picture}
+                                carName={item.name}
+                                rentRate={item.rate}
                                 pickupCity={item.pickupCity}
-                                carModel={item.carModel}
+                                carModel={item.model}
                                 modelYear={item.modelYear}
                                 transmissionType={item.transmissionType}
-                                engineCapacity={item.engineCapacity}
-                                seatingCapacity={item.seatingCapacity}
-                                carType={item.carType}
-                                renter={item.userName}
-                                renterId={item.userId}
+                                engineCapacity={item.capacity}
+                                seatingCapacity={item.seats}
+                                mileage={item.mileage}
+                                renter={item.ownerName}
+                                renterId={item.owner}
                             />
                         )}
                     />
