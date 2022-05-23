@@ -24,6 +24,8 @@ const CarDetailsOwner = ({route}) => {
                         onPress: async () => {
                             await client.delete(`/cars/${carId}`);
                             await client.delete(`/bookings/${carId}`);
+                            await deleteCarDocument(carId);
+                            await deleteBookingDocuments(carId);
                             navigation.navigate('BottomNav');
                             console.log("Document Deleted Successfully");
                         }

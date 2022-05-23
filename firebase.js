@@ -12,13 +12,13 @@ import { Platform } from 'react-native';
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyCQkuwoOupma7JY2ngkDMv6AfAD3b1dyGc",
-  authDomain: "rent-a-car-react-native.firebaseapp.com",
-  projectId: "rent-a-car-react-native",
-  storageBucket: "rent-a-car-react-native.appspot.com",
-  messagingSenderId: "80027665184",
-  appId: "1:80027665184:web:2159202beb1211587b4d45",
-  measurementId: "G-BR7NLYPPDK"
+  apiKey: "*************************",
+  authDomain: "**********************",
+  projectId: "********************",
+  storageBucket: "**********************",
+  messagingSenderId: "***************",
+  appId: "********************",
+  measurementId: "****************"
 };
 
 // Initialize Firebase
