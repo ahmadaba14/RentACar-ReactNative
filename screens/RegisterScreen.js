@@ -5,6 +5,12 @@ import { auth, createUserDocument } from '../firebase'
 import DateTimePicker from '@react-native-community/datetimepicker'
 import client from '../api/client'
 
+import { StreamChat} from 'stream-chat'
+import { chatApiKey } from '../api/chat/chatconfig'
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const chatClient = StreamChat.getInstance(chatApiKey);
+
 const RegisterScreen = () => {
     const [name, setName] = useState('')
     const [email, setEmail] = useState('')
@@ -39,6 +45,33 @@ const RegisterScreen = () => {
         setDateOfBirth(currentDate);
     }
 
+    const saveDateInStorage = async(user) => {
+        try {
+            await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+            console.log('User saved');
+        } catch (error) {
+            alert(error);
+        }
+    }
+
+    const useChatClient = (id) => {
+        const user = {
+            id: id,
+            name: name
+        }
+
+        if (!chatClient.userID) {
+            try {
+                chatClient.connectUser(user, userToken);
+                console.log('Chat Connected')
+            } catch (error) {
+                if (error instanceof Error) {
+                    console.error(`An error occurred while connecting the user: ${error.message}`)
+                }
+            }
+        }
+    }
+
     const handleSignUp = async () => {
         try {
             if (password == confirmPassword){
@@ -55,6 +88,9 @@ const RegisterScreen = () => {
                 await client.post('/users/register', {
                     ...user,
                 });
+
+                saveDateInStorage(user);
+                useChatClient(uid);
 
                 setName('')
                 setEmail('')

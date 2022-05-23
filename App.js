@@ -13,6 +13,8 @@ import AddComplaintConfirm from './screens/AddComplaintConfirm';
 import NegotiationBiddingOwner from './screens/NegotiationBiddingOwner';
 import NegotiationBiddingRenter from './screens/NegotiationBiddingRenter';
 import NegotiationBiddingSuccess from './screens/NegotiationBiddingSuccess';
+import ChatScreen from './screens/Chat';
+import AllChats from './screens/AllChats';
 
 const Stack = createNativeStackNavigator();
 
@@ -31,7 +33,9 @@ export default function App() {
         <Stack.Screen options={{headerShown: false}} name="AddComplaintConfirm" component={AddComplaintConfirm} />
         <Stack.Screen options={{headerShown: false}} name="NegotiationBiddingOwner" component={NegotiationBiddingOwner} />
         <Stack.Screen options={{headerShown: false}} name="NegotiationBiddingRenter" component={NegotiationBiddingRenter} />
-        <Stack.Screen options={{headerShown: false}} name="NegotiationBiddingSuccess" component={NegotiationBiddingSuccess} />
+        <Stack.Screen options={{headerShown: false}} name="NegotiationBiddingSuccess" component={NegotiationBiddingSuccess}/>
+        <Stack.Screen options={{headerShown: false}} name="ChatScreen" component={ChatScreen} />
+        <Stack.Screen options={{headerShown: false}} name="AllChats" component={AllChats} />
       </Stack.Navigator>
     </NavigationContainer>
   );

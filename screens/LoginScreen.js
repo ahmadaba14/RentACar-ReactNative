@@ -3,6 +3,9 @@ import React, {useEffect, useState } from 'react'
 import { KeyboardAvoidingView, StyleSheet, Text, TextInput, TouchableOpacity, View, Image } from 'react-native'
 import { auth } from '../firebase'
 import client from '../api/client'
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+let STORAGE_KEY = '@user_input';
 
 const LoginScreen = () => {
     const [email, setEmail] = useState('')
@@ -31,10 +34,23 @@ const LoginScreen = () => {
 
         await client.post('/users/login', {
             email: email,
-        });
+        }).then(response => {
+            const user = response.data
+            saveDateInStorage(user)
+            console.log(user)
+        })
 
         setEmail('');
         setPassword('');
+    }
+
+    const saveDateInStorage = async(user) => {
+        try {
+            await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+            console.log('User saved');
+        } catch (error) {
+            alert(error);
+        }
     }
 
     return (

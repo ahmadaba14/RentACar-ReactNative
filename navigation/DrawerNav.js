@@ -8,6 +8,7 @@ import AddCar from '../screens/AddCar'
 import Logout from '../components/Logout'
 import UserBookings from '../screens/UserBookings'
 import AddComplaint from '../screens/AddComplaint'
+import AllChats from '../screens/AllChats'
 
 const Drawer = createDrawerNavigator()
 
@@ -77,6 +78,23 @@ const DrawerNav = () => {
                     drawerIcon: ({focused, size}) => (
                         <Icon
                             name='alert-circle-outline'
+                            type='material-community'
+                            color={focused ? '#0782F9': colors.grey2}
+                            size={size} 
+                        />
+                    )
+                }}
+            />
+            <Drawer.Screen 
+                name = "AllChats"
+                component = {AllChats}
+
+                options={{
+                    title: 'Messages',
+                    headerShown: false,
+                    drawerIcon: ({focused, size}) => (
+                        <Icon
+                            name='android-messages'
                             type='material-community'
                             color={focused ? '#0782F9': colors.grey2}
                             size={size} 

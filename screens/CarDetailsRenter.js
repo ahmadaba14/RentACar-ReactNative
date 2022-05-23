@@ -5,10 +5,78 @@ import { colors } from 'react-native-elements';
 import { ScrollView } from 'react-native-gesture-handler';
 import DetailsHeader from '../components/DetailsHeader';
 
+import { StreamChat, Channel as ChannelType, Channel} from 'stream-chat'
+import { chatApiKey } from '../api/chat/chatconfig'
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+let STORAGE_KEY = '@user_input';
+const chatClient = StreamChat.getInstance(chatApiKey);
+
 const CarDetailsRenter = ({route}) => {
     const details = route.params.data;
     const screenWidth = Dimensions.get('window').width;
     const navigation = useNavigation();
+
+    const getUserFromStorage = async() => {
+        try {
+            const value = await AsyncStorage.getItem(STORAGE_KEY);
+            if (value !== null) {
+                const nuser = JSON.parse(value)
+                const user = {
+                    userID: nuser.user._id,
+                    userName: nuser.user.name,
+                    userToken: nuser.token
+                }
+                return user;
+            }
+        } catch (error) {
+            alert(error);
+        }
+    }
+
+    const useChatClient = async () => {
+        const nuser = await getUserFromStorage();
+        const userToken = nuser.userToken;
+
+        const user = {
+            id: nuser.userID,
+            name: nuser.userName
+        }
+
+        if (!chatClient.userID) {
+            try {
+                await chatClient.connectUser(user, userToken);
+                console.log('Chat Connected')
+            } catch (error) {
+                if (error instanceof Error) {
+                    console.error(`An error occurred while connecting the user: ${error.message}`)
+                }
+            }
+        }
+        return user;
+    }
+
+    const createChat = async() => {
+        const user = await useChatClient();
+        const channel = chatClient.channel('messaging', {
+            members: [user.id, details.renterId],
+            name: details.carName
+        });
+
+        try {
+            await channel.watch();
+        } catch (error) {
+            if (error instanceof Error) {
+                console.error(`An error occurred while watching the channel: ${error.message}`)
+            }
+        }
+
+        navigation.navigate('ChatScreen', {
+            channel: channel,
+            chatClient: chatClient,
+            name: channel.data.name
+        })
+    }
 
     return (
         <View style={styles.container}>
@@ -65,13 +133,21 @@ const CarDetailsRenter = ({route}) => {
                     </View>
                 </View>
             </ScrollView>
-            <TouchableOpacity style={styles.button} onPress={() => {
-                navigation.navigate('BookCar', {
-                    data: details
-                })
-            }}>
-                <Text style={styles.buttonText}>Book Car</Text>
-            </TouchableOpacity>
+            <View style={{flexDirection: 'row', justifyContent: 'space-evenly'}}>
+                <TouchableOpacity style={styles.bookButton} onPress={() => {
+                    navigation.navigate('BookCar', {
+                        data: details
+                    })
+                }}>
+                    <Text style={styles.buttonText}>Book Car</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                    style={styles.chatButton}
+                    onPress={createChat}
+                >
+                    <Text style={styles.buttonText}>Chat with Owner</Text>
+                </TouchableOpacity>
+            </View>
         </View>
     )
 }
@@ -121,14 +197,28 @@ const styles = StyleSheet.create({
         color: colors.grey2,
         fontSize: 18,
     },
-    button: {
-        position: 'absolute',
+    bookButton: {
+        position: 'relative',
         backgroundColor: '#0782F9',
         width: 150,
         padding: 15,
         borderRadius: 30,
         alignItems: 'center',
-        bottom: 60,
+        justifyContent: 'center',
+        marginRight: 30,
+        shadowColor: 'black',
+        shadowOpacity: 0.2,
+        shadowOffset: {height: -2},
+        zIndex: 999
+    },
+    chatButton: {
+        position: 'relative',
+        backgroundColor: '#0782F9',
+        width: 150,
+        padding: 15,
+        borderRadius: 30,
+        alignItems: 'center',
+        justifyContent: 'center',
         shadowColor: 'black',
         shadowOpacity: 0.2,
         shadowOffset: {height: -2},
@@ -137,6 +227,7 @@ const styles = StyleSheet.create({
     buttonText: {
         color: 'white',
         fontWeight: '700',
-        fontSize: 20
+        fontSize: 20,
+        textAlign: 'center'
     }
 })
