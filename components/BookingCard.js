@@ -11,7 +11,8 @@ const BookingCard = ({
     totalDays,
     carName,
     carImage,
-    cardWidth
+    cardWidth,
+    status,
 }) => {
     
     return (

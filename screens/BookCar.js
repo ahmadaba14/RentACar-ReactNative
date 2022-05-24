@@ -3,10 +3,12 @@ import React, { useEffect, useState } from 'react'
 import { KeyboardAvoidingView, Dimensions, StyleSheet, Text, View, Platform, TouchableOpacity } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
 import DateTimePicker from '@react-native-community/datetimepicker'
+import { RadioButton } from 'react-native-paper'
 import BookHeader from '../components/BookHeader'
 import { auth, createBookingDocument, getCarImageByID, getCarNameByID } from '../firebase'
 import client from '../api/client'
 import uuid from 'react-native-uuid'
+import { CardField, useConfirmPayment, StripeProvider } from '@stripe/stripe-react-native'
 
 const BookCar = ({route}) => {
     const screenWidth = Dimensions.get('window').width;
@@ -23,6 +25,12 @@ const BookCar = ({route}) => {
     const [totalDays, setTotalDays] = useState(0);
     const [userid, setUserid] = useState('');
     const [show, setShow] = useState(false)
+    
+    const [checked, setChecked] = useState('first')
+    const [cardDetails, setCardDetails] = useState();
+    const { confirmPayment } = useConfirmPayment();
+    const [paid, setPaid] = useState(false);
+    const [completed, setCompleted] = useState(false);
 
     useEffect(() => {
         setTotalRent((totalDays + 1) * details.rentRate);
@@ -53,42 +61,76 @@ const BookCar = ({route}) => {
         setTotalDays(Math.ceil((currentDate - pickupDate) / (1000 * 60 * 60 * 24)));
     }
 
+    const fetchPaymentIntentClientSecret = async (email) => {
+        let clientSecret = {};
+
+        await client.post('/cards/', {
+            amount: totalRent,
+            email: email
+        }).then(res => {
+            clientSecret = res.data.clientSecret;
+        })
+        console.log(clientSecret);
+        return clientSecret;
+    }
+
     const addBooking = async () => {
         try {
             auth.onAuthStateChanged(async user => {
                 if (user) {
                     const uid = user.uid;
+                    const email = user.email;
                     setUserid(uid);
                     const carId = details.carId;
 
-                    var tempName = '';
-                    const response = await client.get('/cars/' + carId);
-                    tempName = response.data.name;
-
-                    console.log('Name:', tempName)
-
-                    var tempImg = '';
-
-                    tempImg = response.data.picture;
-                    console.log('IMG: ', tempImg);
-                    console.log('ID: ', carId);
-
                     const bookingID = uuid.v4();
+
+                    if (checked === 'second') {
+                        if (!cardDetails?.complete || !email) {
+                            alert('Please enter your card details');
+                            setCompleted(false);
+                            return;
+                        }
+                        const billingDetails = {
+                            email: email
+                        }
+                        try {
+                            const clientSecret= await fetchPaymentIntentClientSecret(email);
+                            console.log(clientSecret)
+                            const paymentIntent = await confirmPayment(clientSecret, {
+                                type: 'Card',
+                                billingDetails: billingDetails
+                            });
+                            if (paymentIntent) {
+                                console.log('Payment Confirmed ', paymentIntent);
+                            }
+                            setPaid(true);
+                        } catch (error) {
+                            alert('Payment failed');
+                            console.log(error);
+                            return 'failed';
+                        }
+                    }
 
                     const booking = {
                         _id: bookingID,
                         car: carId,
+                        carName: details.carName,
+                        carPicture: details.image,
                         renter: uid,
                         from: pickupDate.toDateString(),
                         to: returnDate.toDateString(),
                         totalAmount: totalRent,
                         totalHours: totalDays,
+                        isPaid: paid,
                     }
                     await client.post('/bookings/', {
                         ...booking,
                     });
 
-                    console.log('Car booked successfully from ', booking.bookedTimeSlots.from, ' to ', booking.bookedTimeSlots.to);
+                    console.log('Car booked successfully from ', booking.from, ' to ', booking.to);
+                    setCompleted(true);
+                    alert('Car booked successfully');
                 }
             })
         }catch(error){
@@ -96,100 +138,135 @@ const BookCar = ({route}) => {
         }
     }
 
-    const handleBookNow = () => {
-        addBooking();
-        navigation.navigate("BottomNav", {
-            screen: 'UserBookings'
-        });
+    const handleBookNow = async () => {
+        await addBooking();
+        if (completed) {
+            navigation.navigate("BottomNav", {
+                screen: 'UserBookings'
+            });
+        }
     }
 
     return (
-        <View style={styles.container}>
-            <BookHeader 
-                navigation={navigation} 
-                width={screenWidth} 
-                route={details}
-            />
-            <ScrollView>
-                <KeyboardAvoidingView style={styles.formContainer} behavior='padding'>
-                    <View style={styles.inputContainer}>
-                        {Platform.OS === 'ios' && (
-                            <View>
-                                <Text style={styles.headerText}>Pick Up Date</Text>
-                                <DateTimePicker
-                                    style={{marginBottom: 20}}
-                                    value={pickupDate}
-                                    onChange={onChangePickupDate}
-                                    minimumDate={new Date()}
-                                />
-                                <Text style={styles.headerText}>Return Date</Text>
-                                <DateTimePicker
-                                    style={{marginBottom: 20}}
-                                    value={returnDate}
-                                    onChange={onChangeReturnDate}
-                                    minimumDate={pickupDate}
-                                />
-                            </View>
-                        )}
-                        {Platform.OS === 'android' && (
-                            <View>
-                                <View style={styles.dobContainer}>
-                                    <Text style={styles.dobText}>Pick Up Date</Text>
-                                    <TouchableOpacity style={styles.dobButton} onPress={showPickupDatePicker}>
-                                        <Text>{pickupDate.toDateString()}</Text>
-                                        {pickupShow && (
-                                            <DateTimePicker
-                                                display='default'
-                                                mode={pickupMode}
-                                                value={pickupDate}
-                                                onChange={onChangePickupDate}
-                                                minimumDate={new Date()}
-                                            />
-                                        )}
-                                    </TouchableOpacity>
+        <StripeProvider publishableKey='pk_test_51KBWcUEWNDui5E0sMhm5d80K32UAqOlxHehUHAY6A0X4nmjGejUL0iAAax8GrPchUyZz4WzLJvPzuclefYHJ1PdX00MyLPq8TJ'>
+            <View style={styles.container}>
+                <BookHeader 
+                    navigation={navigation} 
+                    width={screenWidth} 
+                    route={details}
+                />
+                <ScrollView>
+                    <KeyboardAvoidingView style={styles.formContainer} behavior='padding'>
+                        <View style={styles.inputContainer}>
+                            {Platform.OS === 'ios' && (
+                                <View>
+                                    <Text style={styles.headerText}>Pick Up Date</Text>
+                                    <DateTimePicker
+                                        style={{marginBottom: 20}}
+                                        value={pickupDate}
+                                        onChange={onChangePickupDate}
+                                        minimumDate={new Date()}
+                                    />
+                                    <Text style={styles.headerText}>Return Date</Text>
+                                    <DateTimePicker
+                                        style={{marginBottom: 20}}
+                                        value={returnDate}
+                                        onChange={onChangeReturnDate}
+                                        minimumDate={pickupDate}
+                                    />
                                 </View>
-                                <View style={styles.dobContainer}>
-                                    <Text style={styles.dobText}>Return Date</Text>
-                                    <TouchableOpacity style={styles.dobButton} onPress={showReturnDatePicker}>
-                                        <Text>{returnDate.toDateString()}</Text>
-                                        {returnShow && (
-                                            <DateTimePicker
-                                                display='default'
-                                                mode={returnMode}
-                                                value={returnDate}
-                                                onChange={onChangeReturnDate}
-                                                minimumDate={pickupDate}
-                                            />
-                                        )}
-                                    </TouchableOpacity>
+                            )}
+                            {Platform.OS === 'android' && (
+                                <View>
+                                    <View style={styles.dobContainer}>
+                                        <Text style={styles.dobText}>Pick Up Date</Text>
+                                        <TouchableOpacity style={styles.dobButton} onPress={showPickupDatePicker}>
+                                            <Text>{pickupDate.toDateString()}</Text>
+                                            {pickupShow && (
+                                                <DateTimePicker
+                                                    display='default'
+                                                    mode={pickupMode}
+                                                    value={pickupDate}
+                                                    onChange={onChangePickupDate}
+                                                    minimumDate={new Date()}
+                                                />
+                                            )}
+                                        </TouchableOpacity>
+                                    </View>
+                                    <View style={styles.dobContainer}>
+                                        <Text style={styles.dobText}>Return Date</Text>
+                                        <TouchableOpacity style={styles.dobButton} onPress={showReturnDatePicker}>
+                                            <Text>{returnDate.toDateString()}</Text>
+                                            {returnShow && (
+                                                <DateTimePicker
+                                                    display='default'
+                                                    mode={returnMode}
+                                                    value={returnDate}
+                                                    onChange={onChangeReturnDate}
+                                                    minimumDate={pickupDate}
+                                                />
+                                            )}
+                                        </TouchableOpacity>
+                                    </View>
                                 </View>
+                            )}
+                            <Text style={styles.totalRentText}>Total Rent: Rs. {totalRent}</Text>
+                        </View>
+                        <View>
+                            <View style={styles.radioContainer}>
+                                <RadioButton
+                                    value='first'
+                                    status={checked === 'first' ? 'checked' : 'unchecked'}
+                                    onPress={() => setChecked('first')} 
+                                />
+                                <Text style={styles.radioText}>Pay Via Cash</Text>
                             </View>
+                            <View style={styles.radioContainer}>
+                                <RadioButton
+                                    value='second'
+                                    status={checked === 'second' ? 'checked' : 'unchecked'}
+                                    onPress={() => setChecked('second')} 
+                                />
+                                <Text style={styles.radioText}>Pay Via Card</Text>
+                            </View>
+                        </View>
+                        {checked === 'second' && (
+                            <CardField
+                                postalCodeEnabled={false}
+                                placeholder={{
+                                    number: '4242 4242 4242 4242'
+                                }}
+                                cardStyle={styles.cardStyle}
+                                style={styles.cardContainer}
+                                onCardChange={card => {
+                                    setCardDetails(card);
+                                }}
+                            />
                         )}
-                        <Text style={styles.totalRentText}>Total Rent: Rs. {totalRent}</Text>
-                    </View>
-                    <View style={styles.buttonContainer}>
-                        <TouchableOpacity
-                            onPress={handleBookNow}
-                            style={styles.button}
-                        >
-                            <Text style={styles.buttonText}>Book Car</Text>
-                        </TouchableOpacity>
-                    </View>
-                    <View style={styles.buttonContainer}>
-                        <TouchableOpacity
-                            onPress={() => {
-                                navigation.navigate('NegotiationBiddingRenter', {
-                                    data: details
-                                });
-                            }}
-                            style={styles.negotiateButton}
-                        >
-                            <Text style={styles.buttonText}>Negotiate</Text>
-                        </TouchableOpacity>
-                    </View>
-                </KeyboardAvoidingView>
-            </ScrollView>
-        </View>
+                        <View style={styles.buttonContainer}>
+                            <TouchableOpacity
+                                onPress={handleBookNow}
+                                style={styles.button}
+                            >
+                                <Text style={styles.buttonText}>Book Car</Text>
+                            </TouchableOpacity>
+                        </View>
+                        <View style={styles.buttonContainer}>
+                            <TouchableOpacity
+                                onPress={() => {
+                                    navigation.navigate('NegotiationBiddingRenter', {
+                                        data: details
+                                    });
+                                }}
+                                style={styles.negotiateButton}
+                            >
+                                <Text style={styles.buttonText}>Negotiate</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </KeyboardAvoidingView>
+                </ScrollView>
+            </View>
+        </StripeProvider>
     )
 }
 
@@ -271,4 +348,24 @@ const styles = StyleSheet.create({
         fontWeight: '700',
         fontSize: 16
     },
+    radioContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-evenly',
+        alignItems: 'center',
+        marginTop: 15
+    },
+    radioText: {
+        fontWeight: '400',
+        fontSize: 20,
+        color: '#0782F9',
+    },
+    card: {
+        backgroundColor: '#0782F9',
+    },
+    cardContainer: {
+        height: 50,
+        marginVertical: 30,
+        marginHorizontal: 20,
+        width: '90%',
+    }
 })

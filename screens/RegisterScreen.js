@@ -10,6 +10,7 @@ import { chatApiKey } from '../api/chat/chatconfig'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const chatClient = StreamChat.getInstance(chatApiKey);
+let STORAGE_KEY = '@user_input';
 
 const RegisterScreen = () => {
     const [name, setName] = useState('')
