@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Dimensions, FlatList, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { ActivityIndicator, Dimensions, FlatList, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
 import client from '../api/client'
 import CarCard from '../components/CarCard'
 import HomeHeader from '../components/HomeHeader'
@@ -10,12 +10,18 @@ const HomeScreen = ({navigation}) => {
     const width = Dimensions.get('window').width / 2 - 20;
 
     const [carsData, setCarsData] = useState([]);
-    
-    useEffect(() => {
+    const [refreshing, setRefreshing] = useState(true);
+
+    const loadCars = () => {
         client.get('/cars')
         .then((response) => {
             setCarsData(response.data);
+            setRefreshing(false);
         })
+    }
+    
+    useEffect(() => {
+        loadCars();
     }, []);
 
     return (
@@ -26,6 +32,7 @@ const HomeScreen = ({navigation}) => {
                     <Text style={styles.headerText}>You Might Like</Text>
                 </View>
                 <View>
+                    {refreshing ? <ActivityIndicator /> : null}
                     <FlatList
                         columnWrapperStyle={{justifyContent: 'space-between'}}
                         showsVerticalScrollIndicator= {false}
@@ -53,6 +60,9 @@ const HomeScreen = ({navigation}) => {
                                 renterId={item.owner}
                             />
                         )}
+                        refreshControl={
+                            <RefreshControl refreshing={refreshing} onRefresh={loadCars} />
+                        }
                     />
                 </View>
             </ScrollView>

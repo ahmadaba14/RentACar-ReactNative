@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { KeyboardAvoidingView, StyleSheet, Text, View, Image, Alert, ScrollView, TextInput, TouchableOpacity } from 'react-native'
+import { KeyboardAvoidingView, StyleSheet, Text, View, Image, Alert, ScrollView, TextInput, TouchableOpacity, Modal, Pressable, Dimensions } from 'react-native'
 import HomeHeader from '../components/HomeHeader'
 import Constants from 'expo-constants'
 import uuid from 'react-native-uuid'
@@ -8,6 +8,7 @@ import firebase from 'firebase/compat/app';
 import 'firebase/storage';
 import { auth, uploadPhotoAsync} from '../firebase';
 import client from '../api/client'
+import * as Location from 'expo-location';
 
 const AddCar = ({navigation}) => {
     const [carName, setCarName] = useState('')
@@ -19,12 +20,8 @@ const AddCar = ({navigation}) => {
     const [mileage, setMileage] = useState('')
     const [pickupCity, setPickupCity] = useState('')
     const [rentRate, setRentRate] = useState('')
-    const [username, setUsername] = useState('')
-    const [carId, setCarId] = useState('')
-    const [userId, setUserId] = useState('')
 
     const [image, setImage] = useState('')
-    const [remoteUri, setRemoteUri] = useState('')
 
     const pickImage = async () => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -46,58 +43,35 @@ const AddCar = ({navigation}) => {
         }
     }
 
-    const addCar = async () => {
-        try {
-            auth.onAuthStateChanged(async user => {
-                if (user) {
-                    const uid = user.uid;
-                    setUserId(uid);
-                    const imageId = uuid.v4();
-                    var tempImg = '';
-                    await uploadPhotoAsync(image, `cars/${imageId}`)
-                        .then((downloadUrl) => {
-                            tempImg = downloadUrl;
-                        })
-                    setRemoteUri(tempImg);
-
-                    const res = await client.get(`/users/${uid}`);
-                    setUsername(res.data.name);
-
-                    const tempCarId = uuid.v4();
-                    setCarId(tempCarId);
-
-                    const car = {
-                        _id: carId,
-                        owner: uid,
-                        ownerName: username,
-                        name: carName,
-                        model: carModel,
-                        modelYear: modelYear,
-                        mileage: mileage,
-                        transmissionType: transmissionType,
-                        capacity: engineCapacity,
-                        seats: seatingCapacity,
-                        pickupCity: pickupCity,
-                        rate: rentRate,
-                        picture: remoteUri,
-                    }
-
-                    await client.post('/cars', {
-                        ...car,
-                    });
-                    console.log(car.carName, ' Added Successfully ');
-                }
-            })
-        }catch(error){
-            alert(error.message);
+    const getCurrentLocation = async() => {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+            console.log('Permission to access location was denied');
+            return;
         }
-    }
+
+        let location = await Location.getCurrentPositionAsync({});
+        console.log(location)
+        return location;
+    };
 
     const handleAddCar = async() => {
-        await addCar();
-        await navigation.push('CarDetailsOwner', {
+        if (carName === '' || carModel === '' || modelYear === '' || transmissionType === '' || engineCapacity === '' || seatingCapacity === '' || mileage === '' || pickupCity === '' || rentRate === '' || image === ''){
+            alert('Please fill all the fields')
+            return;
+        }
+
+        const location = await getCurrentLocation();
+        const currentPosition = ({
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude,
+            latitudeDelta: 0.0922,
+            longitudeDelta: 0.0421,
+        })
+        console.log(currentPosition)
+
+        navigation.navigate('Map', {
             data: {
-                carId: carId,
                 carName: carName,
                 rentRate: rentRate,
                 carModel: carModel,
@@ -106,10 +80,9 @@ const AddCar = ({navigation}) => {
                 engineCapacity: engineCapacity,
                 seatingCapacity: seatingCapacity,
                 mileage: mileage,
-                renter: username,
-                renterId: userId,
                 pickupCity: pickupCity,
-                image: image
+                image: image,
+                currentPosition: currentPosition,
             }
         })
 
@@ -122,11 +95,7 @@ const AddCar = ({navigation}) => {
         setMileage('');
         setPickupCity('');
         setRentRate('');
-        setUsername('');
-        setCarId('');
-        setUserId('');
         setImage('');
-        setRemoteUri('');
 
     }
 
@@ -180,6 +149,7 @@ const AddCar = ({navigation}) => {
                         />
                         <TextInput
                             placeholder='Enter Mileage'
+                            keyboardType='numeric'
                             value={mileage}
                             onChangeText={text => setMileage(text)}
                             style={styles.input}
@@ -214,7 +184,7 @@ const AddCar = ({navigation}) => {
                             onPress={handleAddCar}
                             style={styles.button}
                         >
-                            <Text style={styles.buttonText}>Add Car</Text>
+                            <Text style={styles.buttonText}>Continue</Text>
                         </TouchableOpacity>
                     </View>
                 </KeyboardAvoidingView>

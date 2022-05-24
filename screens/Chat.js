@@ -4,6 +4,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Channel, Chat, MessageInput, MessageList, OverlayProvider, ChannelList} from 'stream-chat-expo'
 import ChatHeader from '../components/ChatHeader'
 import { useNavigation } from '@react-navigation/native'
+import { GestureHandlerRootView } from 'react-native-gesture-handler'
 
 const ChatScreen = ({route}) => {
     const channel = route.params.channel || {};
@@ -14,19 +15,21 @@ const ChatScreen = ({route}) => {
     const {bottom} = useSafeAreaInsets();
 
     return (
-        <SafeAreaView>
-            <OverlayProvider bottomInset={bottom} topInset={0}>
-                <Chat client={chatClient}>
-                    <Channel channel={channel} keyboardVerticalOffset={0}>
-                        <ChatHeader navigation={navigation} width={screenWidth} route={name} />
-                            <View style={StyleSheet.absoluteFill}>
-                                <MessageList />
-                                <MessageInput />
-                            </View>
-                    </Channel>
-                </Chat>
-            </OverlayProvider>
-        </SafeAreaView>
+        <GestureHandlerRootView style={{flex: 1}}>
+            <SafeAreaView>
+                <OverlayProvider bottomInset={bottom} topInset={0}>
+                    <Chat client={chatClient}>
+                        <Channel channel={channel} keyboardVerticalOffset={0}>
+                            <ChatHeader navigation={navigation} width={screenWidth} route={name} />
+                                <View style={StyleSheet.absoluteFill}>
+                                    <MessageList />
+                                    <MessageInput />
+                                </View>
+                        </Channel>
+                    </Chat>
+                </OverlayProvider>
+            </SafeAreaView>
+        </GestureHandlerRootView>
     )
 }
 

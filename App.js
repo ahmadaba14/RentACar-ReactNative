@@ -15,6 +15,7 @@ import NegotiationBiddingRenter from './screens/NegotiationBiddingRenter';
 import NegotiationBiddingSuccess from './screens/NegotiationBiddingSuccess';
 import ChatScreen from './screens/Chat';
 import AllChats from './screens/AllChats';
+import Map from './screens/Map';
 
 const Stack = createNativeStackNavigator();
 
@@ -36,6 +37,7 @@ export default function App() {
         <Stack.Screen options={{headerShown: false}} name="NegotiationBiddingSuccess" component={NegotiationBiddingSuccess}/>
         <Stack.Screen options={{headerShown: false}} name="ChatScreen" component={ChatScreen} />
         <Stack.Screen options={{headerShown: false}} name="AllChats" component={AllChats} />
+        <Stack.Screen options={{headerShown: false}} name="Map" component={Map} />
       </Stack.Navigator>
     </NavigationContainer>
   );
