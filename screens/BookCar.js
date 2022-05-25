@@ -5,10 +5,11 @@ import { ScrollView } from 'react-native-gesture-handler'
 import DateTimePicker from '@react-native-community/datetimepicker'
 import { RadioButton } from 'react-native-paper'
 import BookHeader from '../components/BookHeader'
-import { auth, createBookingDocument, getCarImageByID, getCarNameByID } from '../firebase'
+import { auth , uploadPhotoAsync} from '../firebase'
 import client from '../api/client'
 import uuid from 'react-native-uuid'
 import { CardField, useConfirmPayment, StripeProvider } from '@stripe/stripe-react-native'
+import * as Print from 'expo-print'
 
 const BookCar = ({route}) => {
     const screenWidth = Dimensions.get('window').width;
@@ -23,14 +24,13 @@ const BookCar = ({route}) => {
     const [returnMode, setReturnMode] = useState('date')
     const [totalRent, setTotalRent] = useState(details.rentRate);
     const [totalDays, setTotalDays] = useState(0);
-    const [userid, setUserid] = useState('');
-    const [show, setShow] = useState(false)
     
     const [checked, setChecked] = useState('first')
     const [cardDetails, setCardDetails] = useState();
     const { confirmPayment } = useConfirmPayment();
     const [paid, setPaid] = useState(false);
     const [completed, setCompleted] = useState(false);
+    const [agreementLink, setAgreementLink] = useState('');
 
     useEffect(() => {
         setTotalRent((totalDays + 1) * details.rentRate);
@@ -61,6 +61,150 @@ const BookCar = ({route}) => {
         setTotalDays(Math.ceil((currentDate - pickupDate) / (1000 * 60 * 60 * 24)));
     }
 
+    var username = '';
+
+    var html = `
+        <html>
+
+            <head>
+                <meta http-equiv=Content-Type content="text/html; charset=windows-1252">
+                <meta name=Generator content="Microsoft Word 15 (filtered)">
+                <style>
+                    <!--
+                    /* Font Definitions */
+                    @font-face
+                    {font-family:"Cambria Math";
+                    panose-1:2 4 5 3 5 4 6 3 2 4;}
+                    @font-face
+                        {font-family:"Abadi MT Condensed";}
+                    /* Style Definitions */
+                    p.MsoNormal, li.MsoNormal, div.MsoNormal
+                        {margin-top:0cm;
+                        margin-right:0cm;
+                        margin-bottom:8.0pt;
+                        margin-left:0cm;
+                        line-height:107%;
+                        font-size:11.0pt;
+                        font-family:"Calibri",sans-serif;}
+                    .MsoChpDefault
+                        {font-family:"Calibri",sans-serif;}
+                    .MsoPapDefault
+                        {margin-bottom:8.0pt;
+                        line-height:107%;}
+                    @page WordSection1
+                        {size:612.0pt 792.0pt;
+                        margin:86.4pt 72.0pt 72.0pt 108.0pt;}
+                    div.WordSection1
+                        {page:WordSection1;}
+                -->
+                </style>
+            </head>
+
+            <body lang=en-PK style='word-wrap:break-word'>
+
+                <div class=WordSection1>
+
+                    <div style='border:none;border-bottom:solid windowtext 1.0pt;padding:0cm 0cm 1.0pt 0cm; background:white'>
+
+                        <p class=MsoNormal align=center style='margin-top:12.0pt;text-align:center;
+                        line-height:normal;background:white;border:none;padding:0cm'><b><span
+                        lang=EN-US style='font-size:18.0pt;font-family:"Abadi MT Condensed",sans-serif;
+                        color:black'>Car Rental Agreement</span></b></p>
+
+                    </div>
+
+                    <p class=MsoNormal style='margin-top:12.0pt;margin-right:0cm;margin-bottom:
+                    0cm;margin-left:0cm;line-height:normal;background:white'><span lang=EN-US
+                    style='font-size:13.0pt;font-family:"Abadi MT Condensed",sans-serif;color:#292B2C'>This
+                    car rental agreement is made between ${username} (hereafter referred to as
+                    &quot;the renter&quot; and ${details.renter} (hereafter referred to as &quot;the
+                    owner&quot;).</span></p>
+
+                    <p class=MsoNormal style='margin-top:12.0pt;margin-right:0cm;margin-bottom:
+                    0cm;margin-left:0cm;line-height:normal;background:white'><span lang=EN-US
+                    style='font-size:13.0pt;font-family:"Abadi MT Condensed",sans-serif;color:#292B2C'>The
+                    owner formally agrees to lease the following vehicle to the owner with the following
+                    specification:</span></p>
+
+                    <p class=MsoNormal style='margin-top:12.0pt;margin-right:0cm;margin-bottom:
+                    0cm;margin-left:0cm;line-height:normal;background:white'><span lang=EN-US
+                    style='font-size:13.0pt;font-family:"Abadi MT Condensed",sans-serif;color:#292B2C'>Car
+                    Make: ${details.carName}</span></p>
+
+                    <p class=MsoNormal style='margin-top:12.0pt;margin-right:0cm;margin-bottom:
+                    0cm;margin-left:0cm;line-height:normal;background:white'><span lang=EN-US
+                    style='font-size:13.0pt;font-family:"Abadi MT Condensed",sans-serif;color:#292B2C'>Car
+                    Model: ${details.carModel}</span></p>
+
+                    <p class=MsoNormal style='margin-top:12.0pt;margin-right:0cm;margin-bottom:
+                    0cm;margin-left:0cm;line-height:normal;background:white'><span lang=EN-US
+                    style='font-size:13.0pt;font-family:"Abadi MT Condensed",sans-serif;color:#292B2C'>Year:
+                    ${details.modelYear}</span></p>
+
+                    <p class=MsoNormal style='margin-top:12.0pt;margin-right:0cm;margin-bottom:
+                    0cm;margin-left:0cm;line-height:normal;background:white'><span lang=EN-US
+                    style='font-size:13.0pt;font-family:"Abadi MT Condensed",sans-serif;color:#292B2C'>Car
+                    Mileage: ${details.mileage}</span></p>
+
+                    <p class=MsoNormal style='margin-top:12.0pt;margin-right:0cm;margin-bottom:
+                    0cm;margin-left:0cm;line-height:normal;background:white'><span lang=EN-US
+                    style='font-size:13.0pt;font-family:"Abadi MT Condensed",sans-serif;color:#292B2C'>The
+                    renter will rent the car from ${pickupDate.toDateString()} to ${returnDate.toDateString()}. The renter agrees to pay a fee of
+                    Rs. ${totalRent}</span></p>
+
+                    <p class=MsoNormal style='margin-top:12.0pt;margin-right:0cm;margin-bottom:
+                    0cm;margin-left:0cm;line-height:normal;background:white'><span lang=EN-US
+                    style='font-size:13.0pt;font-family:"Abadi MT Condensed",sans-serif;color:#292B2C'>The
+                    Renter agrees not to use the vehicle for any illegal purposes. They further
+                    agree to abide by all stipulated federal and state regulations guiding the use
+                    and operation of the hired vehicle.</span></p>
+
+                    <p class=MsoNormal style='margin-top:12.0pt;margin-right:0cm;margin-bottom:
+                    0cm;margin-left:0cm;line-height:normal;background:white'><span lang=EN-US
+                    style='font-size:13.0pt;font-family:"Abadi MT Condensed",sans-serif;color:#292B2C'>The
+                    Renter agrees to indemnify and release the Owner for any damages, injuries,
+                    property loss, or death caused while the Renter operates this vehicle.&nbsp;</span></p>
+
+                    <p class=MsoNormal style='margin-top:12.0pt;margin-right:0cm;margin-bottom:
+                    0cm;margin-left:0cm;line-height:normal;background:white'><span lang=EN-US
+                    style='font-size:13.0pt;font-family:"Abadi MT Condensed",sans-serif;color:#292B2C'>The
+                    Renter is responsible for any damages that may be incurred during the rental
+                    period. The Owner attests that the vehicle is in good working condition and has
+                    no operational faults.&nbsp;</span></p>
+
+                    <p class=MsoNormal style='margin-top:12.0pt;margin-right:0cm;margin-bottom:
+                    0cm;margin-left:0cm;line-height:normal;background:white'><span lang=EN-US
+                    style='font-size:13.0pt;font-family:"Abadi MT Condensed",sans-serif;color:#292B2C'>______________________________________</span></p>
+
+                    <p class=MsoNormal style='margin-top:12.0pt;margin-right:0cm;margin-bottom:
+                    0cm;margin-left:0cm;line-height:normal;background:white'><span lang=EN-US
+                    style='font-size:13.0pt;font-family:"Abadi MT Condensed",sans-serif;color:#292B2C'>(Renter
+                    Signature)</span></p>
+
+                    <p class=MsoNormal style='margin-top:12.0pt;margin-right:0cm;margin-bottom:
+                    0cm;margin-left:0cm;line-height:normal;background:white'><span lang=EN-US
+                    style='font-size:13.0pt;font-family:"Abadi MT Condensed",sans-serif;color:#292B2C'>______________________________________</span></p>
+
+                    <p class=MsoNormal style='margin-top:12.0pt;margin-right:0cm;margin-bottom:
+                    0cm;margin-left:0cm;line-height:normal;background:white'><span lang=EN-US
+                    style='font-size:13.0pt;font-family:"Abadi MT Condensed",sans-serif;color:#292B2C'>(Owner
+                    Signature)</span></p>
+
+                    <p class=MsoNormal style='margin-top:12.0pt;margin-right:0cm;margin-bottom:
+                    0cm;margin-left:0cm;line-height:normal;background:white'><span lang=EN-US
+                    style='font-size:13.0pt;font-family:"Abadi MT Condensed",sans-serif;color:#292B2C'>_________________________________________</span></p>
+
+                    <p class=MsoNormal style='margin-top:12.0pt;margin-right:0cm;margin-bottom:
+                    0cm;margin-left:0cm;line-height:normal;background:white'><span lang=EN-US
+                    style='font-size:13.0pt;font-family:"Abadi MT Condensed",sans-serif;color:#292B2C'>(Date)</span></p>
+
+                </div>
+
+            </body>
+
+        </html>
+        `;
+
     const fetchPaymentIntentClientSecret = async (email) => {
         let clientSecret = {};
 
@@ -80,10 +224,27 @@ const BookCar = ({route}) => {
                 if (user) {
                     const uid = user.uid;
                     const email = user.email;
-                    setUserid(uid);
                     const carId = details.carId;
 
                     const bookingID = uuid.v4();
+
+                    await client.get('/users/' + uid).then(res => {
+                        username = (res.data.user.name);
+                        console.log(username)
+                    })
+                    console.log(username);
+                    
+                    var uri = '';
+                    await Print.printToFileAsync({ html }).then(res => {
+                        uri = res.uri;
+                    })
+                    const agreementId = uuid.v4();
+                    var tempAgreement = ''
+                    await uploadPhotoAsync(uri,`agreements/${agreementId}`)
+                        .then((downloadUrl) => {
+                            tempAgreement = downloadUrl;
+                        })
+                    console.log(tempAgreement);
 
                     if (checked === 'second') {
                         if (!cardDetails?.complete || !email) {
@@ -123,14 +284,11 @@ const BookCar = ({route}) => {
                         totalAmount: totalRent,
                         totalHours: totalDays,
                         isPaid: paid,
+                        agreement: tempAgreement,
                     }
                     await client.post('/bookings/', {
                         ...booking,
-                    });
-
-                    console.log('Car booked successfully from ', booking.from, ' to ', booking.to);
-                    setCompleted(true);
-                    alert('Car booked successfully');
+                    })
                 }
             })
         }catch(error){
@@ -140,11 +298,7 @@ const BookCar = ({route}) => {
 
     const handleBookNow = async () => {
         await addBooking();
-        if (completed) {
-            navigation.navigate("BottomNav", {
-                screen: 'UserBookings'
-            });
-        }
+        navigation.navigate("BookingSuccess");
     }
 
     return (

@@ -34,7 +34,7 @@ const UserBookings = ({navigation}) => {
 
     useEffect(() => {
         loadBooking();
-    }, [refreshing]);
+    });
 
     return (
         <View style={{flex: 1}}>
