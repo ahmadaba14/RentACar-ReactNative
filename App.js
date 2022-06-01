@@ -17,10 +17,49 @@ import ChatScreen from './screens/Chat';
 import AllChats from './screens/AllChats';
 import Map from './screens/Map';
 import BookingSuccess from './screens/BookingSuccess';
+import DamageControlForm from './screens/DamageControlForm';
+import RentEstimationScreen from './screens/RentEstimationScreen';
+import AddCarSuccess from './screens/AddCarSuccess';
+import CarDocumentsSubmission from './screens/CarDocumentsSubmission';
+import EditMap from './screens/EditMap';
+import EditDamageControlForm from './screens/EditDamageControlForm';
+import EditRentEstimationScreen from './screens/EditRentEstimationScreen';
+import EditCarSuccess from './screens/EditCarSuccess';
+// import ScanbotSDK, { InitializationOptions } from 'react-native-scanbot-sdk';
+// import { useEffect } from 'react';
 
 const Stack = createNativeStackNavigator();
 
+// const LICENSE_KEY =
+//   "EEc83ewJIUbTiZZW7fB8cSALzTZR3I" +
+//   "APqxPX/xk7moaye6OBdJH6XIkUjnsU" +
+//   "FLFAgkfNgrYM8qBIaZm+9MfRvFuqOg" +
+//   "2XXCsGCoNWUxUip9eCPYWQc+wKeA9f" +
+//   "/a0lR4YUh1GoWHbgo33CT3sqArv0aO" +
+//   "xePPzSD3fGBj+hAr7FeRITgvmg6D6x" +
+//   "a0Lhyp/So4D1pKQWzKf5nbtgawUXTD" +
+//   "UwbKkjzqeXnvf+vnrxaxoQG29nfnpk" +
+//   "Jg6otRMHOEx0ZWv29ZNJ07PpRn8lvc" +
+//   "tUA3Y4yPX6goxbSRgZyxtUYmc5oajR" +
+//   "+i7ODVpA7qp47oWiOuPXET/C4SbXw+" +
+//   "dXc0/w67P/HQ==\nU2NhbmJvdFNESw" +
+//   "pjb20ucmVudEFDYXIucmVudEFDYXJB" +
+//   "cHAKMTY1NDY0NjM5OQo4Mzg4NjA3Cj" +
+//   "M=\n";
+
 export default function App() {
+  // useEffect(() => {
+  //   const initScanbot = async() => {
+  //     const options = {
+  //       licenseKey: LICENSE_KEY,
+  //       loggingEnabled: true,
+  //     };
+  //     let result = await ScanbotSDK.initializeSDK(options);
+  //     console.log(result.result);
+  //   }
+  //   initScanbot();
+  // }, []);
+
   return (
     <NavigationContainer>
       <Stack.Navigator>
@@ -40,6 +79,14 @@ export default function App() {
         <Stack.Screen options={{headerShown: false}} name="AllChats" component={AllChats} />
         <Stack.Screen options={{headerShown: false}} name="Map" component={Map} />
         <Stack.Screen options={{headerShown: false}} name="BookingSuccess" component={BookingSuccess} />
+        <Stack.Screen options={{headerShown: false}} name="DamageControlForm" component={DamageControlForm} />
+        <Stack.Screen options={{headerShown: false}} name="RentEstimationScreen" component={RentEstimationScreen} />
+        <Stack.Screen options={{headerShown: false}} name="AddCarSuccess" component={AddCarSuccess} />
+        <Stack.Screen options={{headerShown: false}} name="CarDocumentsSubmission" component={CarDocumentsSubmission} />
+        <Stack.Screen options={{headerShown: false}} name="EditMap" component={EditMap} />
+        <Stack.Screen options={{headerShown: false}} name="EditDamageControlForm" component={EditDamageControlForm} />
+        <Stack.Screen options={{headerShown: false}} name="EditRentEstimationScreen" component={EditRentEstimationScreen} />
+        <Stack.Screen options={{headerShown: false}} name="EditCarSuccess" component={EditCarSuccess} />
       </Stack.Navigator>
     </NavigationContainer>
   );

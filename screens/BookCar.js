@@ -129,7 +129,7 @@ const BookCar = ({route}) => {
                     <p class=MsoNormal style='margin-top:12.0pt;margin-right:0cm;margin-bottom:
                     0cm;margin-left:0cm;line-height:normal;background:white'><span lang=EN-US
                     style='font-size:13.0pt;font-family:"Abadi MT Condensed",sans-serif;color:#292B2C'>Car
-                    Make: ${details.carName}</span></p>
+                    Make: ${details.carMake}</span></p>
 
                     <p class=MsoNormal style='margin-top:12.0pt;margin-right:0cm;margin-bottom:
                     0cm;margin-left:0cm;line-height:normal;background:white'><span lang=EN-US
@@ -230,11 +230,11 @@ const BookCar = ({route}) => {
 
                     await client.get('/users/' + uid).then(res => {
                         username = (res.data.user.name);
-                        console.log(username)
                     })
                     console.log(username);
                     
                     var uri = '';
+                    // let finalHtml = html.replace(/{username}/g, username);
                     await Print.printToFileAsync({ html }).then(res => {
                         uri = res.uri;
                     })
@@ -276,7 +276,9 @@ const BookCar = ({route}) => {
                     const booking = {
                         _id: bookingID,
                         car: carId,
-                        carName: details.carName,
+                        carMake: details.carMake,
+                        carModel: details.carModel,
+                        carModelYear: details.modelYear,
                         carPicture: details.image,
                         renter: uid,
                         from: pickupDate.toDateString(),
@@ -289,6 +291,8 @@ const BookCar = ({route}) => {
                     await client.post('/bookings/', {
                         ...booking,
                     })
+                    console.log('Booking Added');
+                    navigation.navigate("BookingSuccess");
                 }
             })
         }catch(error){
@@ -399,7 +403,7 @@ const BookCar = ({route}) => {
                         )}
                         <View style={styles.buttonContainer}>
                             <TouchableOpacity
-                                onPress={handleBookNow}
+                                onPress={addBooking}
                                 style={styles.button}
                             >
                                 <Text style={styles.buttonText}>Book Car</Text>

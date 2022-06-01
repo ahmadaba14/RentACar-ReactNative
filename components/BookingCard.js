@@ -3,15 +3,19 @@ import { StyleSheet, Text, View, Image } from 'react-native'
 import { colors } from 'react-native-elements'
 
 const BookingCard = ({
+    bookingId,
     userId,
     carId,
     from,
     to,
     totalAmount,
     totalDays,
-    carName,
+    carMake,
+    carModel,
+    carModelYear,
     carImage,
     cardWidth,
+    isPaid,
     status,
 }) => {
     
@@ -24,7 +28,7 @@ const BookingCard = ({
                 />
             </View>
             <View style={styles.dataContainer}>
-                <Text style={styles.carName}>{carName}</Text>
+                <Text style={styles.carName}>{carModelYear} {carMake} {carModel}</Text>
                 <Text style={styles.amount}>Total Rent: Rs. {totalAmount}</Text>
                 <Text style={styles.dates}>From {from} to</Text>
                 <Text style={styles.dates}>{to}</Text>

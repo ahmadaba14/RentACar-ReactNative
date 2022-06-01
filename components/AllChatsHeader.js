@@ -13,7 +13,7 @@ const AllChatsHeader = ({navigation, width}) => {
                     color={'white'}
                     size={32}
                     onPress={() => {
-                        navigation.navigate('BottomNav')
+                        navigation.goBack()
                     }} 
                 />
             </View>

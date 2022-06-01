@@ -23,79 +23,86 @@ const Map = ({route}) => {
     const [username, setUsername] = useState('')
     const [carId, setCarId] = useState('')
 
-    const addCar = async () => {
-        try {
-            auth.onAuthStateChanged(async user => {
-                if (user) {
-                    const uid = user.uid;
-                    setUserId(uid);
-                    const imageId = uuid.v4();
-                    var tempImg = '';
-                    const image = details.image;
-                    await uploadPhotoAsync(image, `cars/${imageId}`)
-                        .then((downloadUrl) => {
-                            tempImg = downloadUrl;
-                        })
-                    setRemoteUri(tempImg);
+    // const addCar = async () => {
+    //     try {
+    //         auth.onAuthStateChanged(async user => {
+    //             if (user) {
+    //                 const uid = user.uid;
+    //                 setUserId(uid);
+    //                 const imageId = uuid.v4();
+    //                 var tempImg = '';
+    //                 const image = details.image;
+    //                 await uploadPhotoAsync(image, `cars/${imageId}`)
+    //                     .then((downloadUrl) => {
+    //                         tempImg = downloadUrl;
+    //                     })
+    //                 setRemoteUri(tempImg);
 
-                    const res = await client.get(`/users/${uid}`);
-                    setUsername(res.data.name);
+    //                 const res = await client.get(`/users/${uid}`);
+    //                 setUsername(res.data.name);
 
-                    const tempCarId = uuid.v4();
-                    setCarId(tempCarId);
+    //                 const tempCarId = uuid.v4();
+    //                 setCarId(tempCarId);
 
-                    const car = {
-                        _id: carId,
-                        owner: uid,
-                        ownerName: username,
-                        name: details.carName,
-                        model: details.carModel,
-                        modelYear: details.modelYear,
-                        mileage: details.mileage,
-                        transmissionType: details.transmissionType,
-                        capacity: details.engineCapacity,
-                        seats: details.seatingCapacity,
-                        pickupCity: details.pickupCity,
-                        location: position,
-                        rate: details.rentRate,
-                        picture: remoteUri,
-                    }
+    //                 const car = {
+    //                     _id: carId,
+    //                     owner: uid,
+    //                     ownerName: username,
+    //                     name: details.carName,
+    //                     model: details.carModel,
+    //                     modelYear: details.modelYear,
+    //                     mileage: details.mileage,
+    //                     transmissionType: details.transmissionType,
+    //                     capacity: details.engineCapacity,
+    //                     seats: details.seatingCapacity,
+    //                     pickupCity: details.pickupCity,
+    //                     location: position,
+    //                     rate: details.rentRate,
+    //                     picture: remoteUri,
+    //                 }
 
-                    await client.post('/cars', {
-                        ...car,
-                    });
-                    console.log(car.name, ' Added Successfully ');
-                }
-            })
-        }catch(error){
-            alert(error.message);
-        }
+    //                 await client.post('/cars', {
+    //                     ...car,
+    //                 });
+    //                 console.log(car.name, ' Added Successfully ');
+    //             }
+    //         })
+    //     }catch(error){
+    //         alert(error.message);
+    //     }
+    // }
+
+    const getCityName = async(location) => {
+        let result = await Location.reverseGeocodeAsync(location)
+        return result[0].city
     }
 
-    const handleAddCar = async () => {
-        await addCar();
-        await navigation.navigate('CarDetailsOwner', {
+    const handleAddLocation = async () => {
+        const pickupCity = await getCityName(position);
+        console.log(pickupCity)
+
+        navigation.navigate('DamageControlForm', {
             data: {
-                carId: carId,
-                carName: details.carName,
-                rentRate: details.rentRate,
+                carMake: details.carMake,
                 carModel: details.carModel,
                 modelYear: details.modelYear,
+                carVersion: details.carVersion,
+                carPrice: details.carPrice,
+                carType: details.carType,
                 transmissionType: details.transmissionType,
+                engineType: details.engineType,
                 engineCapacity: details.engineCapacity,
-                seatingCapacity: details.seatingCapacity,
                 mileage: details.mileage,
-                renter: username,
-                renterId: userId,
-                pickupCity: details.pickupCity,
                 image: details.image,
+                currentPosition: position,
+                pickupCity: pickupCity,
             }
         })
     }
     
   return (
     <View style={styles.container}>
-        <MapHeader navigation={navigation} width={screenWidth}/>
+        <MapHeader navigation={navigation} width={screenWidth} route={details}/>
         <MapView
             provider={PROVIDER_GOOGLE} 
             style={styles.map} 
@@ -103,16 +110,22 @@ const Map = ({route}) => {
             onRegionChangeComplete={(region) => {
                 setPosition(region);
             }}
-        />
-        <View style={styles.markerFixed}>
-          <Image style={styles.marker} source={marker} />
-        </View>
+        >
+            <MapView.Marker
+                draggable
+                title={'Your Pickup Location'}
+                coordinate={{
+                    latitude: position.latitude,
+                    longitude: position.longitude,
+                }}
+            />
+        </MapView>
         <View style={styles.buttonContainer}>
             <TouchableOpacity
-                onPress={handleAddCar}
+                onPress={handleAddLocation}
                 style={styles.button}
             >
-                <Text style={styles.buttonText}>Add Car</Text>
+                <Text style={styles.buttonText}>Add Location</Text>
             </TouchableOpacity>
         </View>
     </View>
@@ -131,13 +144,6 @@ const styles = StyleSheet.create({
     map: {
       width: Dimensions.get('window').width,
       height: Dimensions.get('window').height,
-    },
-    markerFixed: {
-        left: '50%',
-        marginLeft: -24,
-        marginTop: -48,
-        position: 'absolute',
-        top: '50%'
     },
     marker: {
         height: 48,

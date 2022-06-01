@@ -6,35 +6,45 @@ import { auth } from '../firebase'
 
 const CarCard = ({
     carId,
-    carName,
+    cardWidth,
+    image,
+    carMake,
     rentRate,
+    pickupCity,
+    location,
     carModel,
+    carVersion,
     modelYear,
+    carType,
+    damages,
     transmissionType,
     engineCapacity,
-    seatingCapacity,
+    engineType,
     mileage,
+    carPrice,
     renter,
-    renterId,
-    pickupCity,
-    image,
-    cardWidth
+    renterId
 }) => {
     const navigation = useNavigation();
     const [carsData, setcarsData] = useState({
         carId: carId,
-        carName: carName,
+        image: image,
+        carMake: carMake,
         rentRate: rentRate,
+        pickupCity: pickupCity,
+        location: location,
         carModel: carModel,
+        carVersion: carVersion,
         modelYear: modelYear,
+        carType: carType,
+        damages: damages,
         transmissionType: transmissionType,
         engineCapacity: engineCapacity,
-        seatingCapacity: seatingCapacity,
+        engineType: engineType,
         mileage: mileage,
+        carPrice: carPrice,
         renter: renter,
-        renterId: renterId,
-        pickupCity: pickupCity,
-        image: image,
+        renterId: renterId
     })
 
     const handlePress = async() => {
@@ -43,11 +53,11 @@ const CarCard = ({
                 if (user) {
                     const uid = user.uid;
                     if (uid==renterId){
-                        navigation.navigate('CarDetailsOwner', {
+                        navigation.push('CarDetailsOwner', {
                             data: carsData
                         })
                     } else {
-                        navigation.navigate('CarDetailsRenter', {
+                        navigation.push('CarDetailsRenter', {
                             data: carsData
                         })
                     }
@@ -68,7 +78,7 @@ const CarCard = ({
                     source={{uri: image}} 
                 />
                 <View>
-                    <Text style={styles.carName}>{carName}</Text>
+                    <Text style={styles.carName}>{modelYear} {carMake} {carModel}</Text>
                     <Text style={styles.rentRate}>Rs. {rentRate}/day</Text>
                     <Text style={styles.pickupCity}>{pickupCity}</Text>
                 </View>

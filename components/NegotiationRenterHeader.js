@@ -13,9 +13,7 @@ const NegotiationRenterHeader = ({navigation, width, route}) => {
                     color={'white'}
                     size={32}
                     onPress={() => {
-                        navigation.navigate('BookCar', {
-                            data: route
-                        })
+                        navigation.goBack();
                     }} 
                 />
             </View>

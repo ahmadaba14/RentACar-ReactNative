@@ -13,9 +13,7 @@ const NegotiationOwnerHeader = ({navigation, width, route}) => {
                     color={'white'}
                     size={32}
                     onPress={() => {
-                        navigation.navigate('CarDetailsOwner', {
-                            data: route
-                        })
+                        navigation.goBack();
                     }} 
                 />
             </View>

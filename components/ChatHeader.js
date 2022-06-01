@@ -14,7 +14,7 @@ const ChatHeader = ({navigation, width, route}) => {
                     color={'white'}
                     size={32}
                     onPress={() => {
-                        navigation.navigate('CarDetailsRenter')
+                        navigation.goBack()
                     }} 
                 />
             </View>

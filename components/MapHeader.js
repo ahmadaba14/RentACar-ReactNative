@@ -2,7 +2,7 @@ import React from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 import { Icon } from 'react-native-elements/dist/icons/Icon'
 
-const MapHeader = ({navigation, width}) => {
+const MapHeader = ({navigation, width, route}) => {
 
     return (
         <View style={[styles.header, {width: width}]}>
@@ -13,7 +13,7 @@ const MapHeader = ({navigation, width}) => {
                     color={'white'}
                     size={32}
                     onPress={() => {
-                        navigation.navigate('BottomNav')
+                        navigation.goBack();
                     }} 
                 />
             </View>

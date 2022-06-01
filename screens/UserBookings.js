@@ -55,6 +55,7 @@ const UserBookings = ({navigation}) => {
                         keyExtractor={(item, index) => index.toString()}
                         renderItem={({item}) => (
                             <BookingCard
+                                bookingId={item._id}
                                 userId={item.renter}
                                 carId={item.car}
                                 from={item.from}
@@ -62,8 +63,11 @@ const UserBookings = ({navigation}) => {
                                 totalAmount={item.totalAmount}
                                 totalDays={item.totalHours}
                                 cardWidth={width}
-                                carName={item.carName}
+                                carMake={item.carMake}
+                                carModel={item.carModel}
+                                carModelYear = {item.carModelYear}
                                 carImage={item.carPicture}
+                                isPaid={item.isPaid}
                                 status={item.status}
                             />
                         )}

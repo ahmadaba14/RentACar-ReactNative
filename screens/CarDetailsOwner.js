@@ -17,7 +17,7 @@ const CarDetailsOwner = ({route}) => {
             const carId = details.carId;
             Alert.alert(
                 'Confirmation',
-                `Are you sure you want to delete ${details.carName}?`,
+                `Are you sure you want to delete this car?`,
                 [
                     {
                         text: 'Yes',
@@ -52,17 +52,17 @@ const CarDetailsOwner = ({route}) => {
                     />
                 </View>
                 <View style={styles.detailsGreyContainer}>
-                    <Text style={styles.detailsHeaderText}>{details.carName}</Text>
+                    <Text style={styles.detailsHeaderText}>{details.modelYear} {details.carMake} {details.carModel}</Text>
                     <Text style={styles.detailsHeaderText}>Rs. {details.rentRate}/day</Text>
                 </View>
                 <View style={styles.detailsContainer}>
                     <View style={styles.detailsBodyTextContainer}>
-                        <Text style={[styles.detailsBodyText, {fontWeight: '700'}]}>Model</Text>
-                        <Text style={styles.detailsBodyText}>{details.carModel}</Text>
+                        <Text style={[styles.detailsBodyText, {fontWeight: '700'}]}>Version</Text>
+                        <Text style={styles.detailsBodyText}>{details.carVersion}</Text>
                     </View>
                     <View style={styles.detailsBodyTextContainer}>
-                        <Text style={[styles.detailsBodyText, {fontWeight: '700'}]}>Model Year</Text>
-                        <Text style={styles.detailsBodyText}>{details.modelYear}</Text>
+                        <Text style={[styles.detailsBodyText, {fontWeight: '700'}]}>Body Type</Text>
+                        <Text style={styles.detailsBodyText}>{details.carType}</Text>
                     </View>
                 </View>
                 <View style={styles.detailsGreyContainer}>
@@ -71,18 +71,18 @@ const CarDetailsOwner = ({route}) => {
                         <Text style={styles.detailsBodyText}>{details.transmissionType}</Text>
                     </View>
                     <View style={styles.detailsBodyTextContainer}>
-                        <Text style={[styles.detailsBodyText, {fontWeight: '700'}]}>Engine Capacity</Text>
-                        <Text style={styles.detailsBodyText}>{details.engineCapacity}</Text>
+                        <Text style={[styles.detailsBodyText, {fontWeight: '700'}]}>Mileage</Text>
+                        <Text style={styles.detailsBodyText}>{details.mileage} km</Text>
                     </View>
                 </View>
                 <View style={styles.detailsContainer}>
                     <View style={styles.detailsBodyTextContainer}>
-                        <Text style={[styles.detailsBodyText, {fontWeight: '700'}]}>Seating Capacity</Text>
-                        <Text style={styles.detailsBodyText}>{details.seatingCapacity}</Text>
+                        <Text style={[styles.detailsBodyText, {fontWeight: '700'}]}>Engine Capacity</Text>
+                        <Text style={styles.detailsBodyText}>{details.engineCapacity}</Text>
                     </View>
                     <View style={styles.detailsBodyTextContainer}>
-                        <Text style={[styles.detailsBodyText, {fontWeight: '700'}]}>Mileage</Text>
-                        <Text style={styles.detailsBodyText}>{details.mileage}</Text>
+                        <Text style={[styles.detailsBodyText, {fontWeight: '700'}]}>Engine Type</Text>
+                        <Text style={styles.detailsBodyText}>{details.engineType}</Text>
                     </View>
                 </View>
                 <View style={styles.detailsGreyContainer}>
@@ -163,11 +163,10 @@ const styles = StyleSheet.create({
     editButton: {
         position: 'relative',
         backgroundColor: '#0782F9',
-        width: 150,
+        width: 200,
         padding: 15,
-        borderRadius: 30,
         alignItems: 'center',
-        marginRight: 30,
+        marginRight: 25,
         shadowColor: 'black',
         shadowOpacity: 0.2,
         shadowOffset: {height: -2},
@@ -176,9 +175,8 @@ const styles = StyleSheet.create({
     deleteButton: {
         position: 'relative',
         backgroundColor: '#0782F9',
-        width: 150,
+        width: 200,
         padding: 15,
-        borderRadius: 30,
         alignItems: 'center',
         shadowColor: 'black',
         shadowOpacity: 0.2,

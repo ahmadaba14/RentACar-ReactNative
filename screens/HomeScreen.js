@@ -47,15 +47,20 @@ const HomeScreen = ({navigation}) => {
                                 carId={item._id}
                                 cardWidth={width}
                                 image={item.picture}
-                                carName={item.name}
+                                carMake={item.make}
                                 rentRate={item.rate}
                                 pickupCity={item.pickupCity}
+                                location={item.location}
                                 carModel={item.model}
+                                carVersion={item.version}
                                 modelYear={item.modelYear}
+                                carType={item.carType}
+                                damages={item.damages}
                                 transmissionType={item.transmissionType}
-                                engineCapacity={item.capacity}
-                                seatingCapacity={item.seats}
+                                engineCapacity={item.engineCapacity}
+                                engineType={item.engineType}
                                 mileage={item.mileage}
+                                carPrice={item.carPrice}
                                 renter={item.ownerName}
                                 renterId={item.owner}
                             />

@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { KeyboardAvoidingView, StyleSheet, Text, View, Image, Alert, ScrollView, TextInput, TouchableOpacity, Modal, Pressable, Dimensions } from 'react-native'
+import { KeyboardAvoidingView, StyleSheet, Text, View, Image, Alert, ScrollView, TouchableOpacity, Modal, Pressable, Dimensions } from 'react-native'
+import { TextInput } from 'react-native-paper'
 import HomeHeader from '../components/HomeHeader'
 import Constants from 'expo-constants'
 import uuid from 'react-native-uuid'
@@ -9,19 +10,72 @@ import 'firebase/storage';
 import { auth, uploadPhotoAsync} from '../firebase';
 import client from '../api/client'
 import * as Location from 'expo-location';
+import DropDownPicker from 'react-native-dropdown-picker'
+import cars from '../consts/cars.json'
+import CascadePicker from 'rn-cascade-picker'
+import { Button } from 'react-native-elements'
+import templateImage from '../images/camera-icon-21.png'
 
 const AddCar = ({navigation}) => {
-    const [carName, setCarName] = useState('')
+    const [carMake, setCarMake] = useState('')
     const [carModel, setCarModel] = useState('')
-    const [modelYear, setModelYear] = useState('')
+    const [carVersion, setCarVersion] = useState('')
+    const [modelYear, setModelYear] = useState(0)
+    const [carPrice, setCarPrice] = useState(0)
     const [transmissionType, setTransmissionType] = useState('')
+    const [engineType, setEngineType] = useState('')
     const [engineCapacity, setEngineCapacity] = useState('')
-    const [seatingCapacity, setSeatingCapacity] = useState('')
-    const [mileage, setMileage] = useState('')
-    const [pickupCity, setPickupCity] = useState('')
-    const [rentRate, setRentRate] = useState('')
+    const [mileage, setMileage] = useState(0)
+    const [carType, setCarType] = useState('')
 
     const [image, setImage] = useState('')
+
+    var count = 0;
+
+    const carData = cars.map((make) => {
+        count = count + 1;
+        return {
+            value: (count).toString(),
+            label: make.key,
+            children: make.values.map((model) => {
+                count = count + 1;
+                return {
+                    value: (count).toString(),
+                    label: model.key,
+                    children: model.values.map((version) => {
+                        count = count + 1;
+                        return {
+                            value: (count).toString(),
+                            label: version.key,
+                            children: version.values.map((year) => {
+                                count = count + 1;
+                                return {
+                                    value: (count).toString(),
+                                    label: year.key,
+                                    children: year.values.map((car) => {
+                                        return {
+                                            Key: car.Key,
+                                            Make: car.Make,
+                                            Model: car.Model,
+                                            Version: car.Version,
+                                            Price: car.Price,
+                                            Year: car.Year,
+                                            EngineType: car.EngineType,
+                                            EngineCapacity: car.EngineCapacity,
+                                            Transmission: car.Transmission,
+                                            BodyType: car.BodyType
+                                        }
+                                    })
+                                }
+                            })
+                        }
+                    })
+                }
+            })
+        }
+    })
+
+    const [pickerVisible, setPickerVisible] = useState(false)
 
     const pickImage = async () => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -34,13 +88,29 @@ const AddCar = ({navigation}) => {
                 mediaTypes: ImagePicker.MediaTypeOptions.Images,
                 allowsEditing: true,
                 quality: 0.6,
-                aspect: [4, 3]
+                aspect: [16, 9]
             });
     
             if (!result.cancelled){
                 setImage(result.uri);
             }
         }
+    }
+
+    const getCarDetails = (val) => {
+        carData.find(item => item.value === val[0]).children.find(item => item.value === val[1]).children.find(item => item.value === val[2]).children.find(item => item.value === val[3]).children.map(item => {
+            setCarMake(item.Make)
+            setCarModel(item.Model)
+            setCarVersion(item.Version)
+            setCarPrice(item.Price)
+            setModelYear(item.Year)
+            setEngineType(item.EngineType)
+            setEngineCapacity(item.EngineCapacity)
+            setTransmissionType(item.Transmission)
+            setCarType(item.BodyType)
+        })
+        console.log(carMake, '', carModel, '', carVersion, '', modelYear, '', carPrice, '', engineType, '', engineCapacity, '', transmissionType, '', carType)
+        setPickerVisible(false)
     }
 
     const getCurrentLocation = async() => {
@@ -56,7 +126,7 @@ const AddCar = ({navigation}) => {
     };
 
     const handleAddCar = async() => {
-        if (carName === '' || carModel === '' || modelYear === '' || transmissionType === '' || engineCapacity === '' || seatingCapacity === '' || mileage === '' || pickupCity === '' || rentRate === '' || image === ''){
+        if (carMake === '' || carModel === '' || carVersion === '' || modelYear === 0 || carPrice === 0 || engineType === '' || engineCapacity === '' || transmissionType === '' || carType === '' || mileage === '') {
             alert('Please fill all the fields')
             return;
         }
@@ -65,38 +135,39 @@ const AddCar = ({navigation}) => {
         const currentPosition = ({
             latitude: location.coords.latitude,
             longitude: location.coords.longitude,
-            latitudeDelta: 0.0922,
-            longitudeDelta: 0.0421,
+            latitudeDelta: 0.025,
+            longitudeDelta: 0.025,
         })
         console.log(currentPosition)
 
         navigation.navigate('Map', {
             data: {
-                carName: carName,
-                rentRate: rentRate,
+                carMake: carMake,
                 carModel: carModel,
                 modelYear: modelYear,
+                carVersion: carVersion,
+                carPrice: carPrice,
+                carType: carType,
                 transmissionType: transmissionType,
+                engineType: engineType,
                 engineCapacity: engineCapacity,
-                seatingCapacity: seatingCapacity,
                 mileage: mileage,
-                pickupCity: pickupCity,
                 image: image,
                 currentPosition: currentPosition,
             }
         })
 
-        setCarName('');
+        setCarMake('');
         setCarModel('');
-        setModelYear('');
+        setModelYear(0);
+        setCarVersion('');
+        setCarType('');
+        setCarPrice(0);
         setTransmissionType('');
+        setEngineType('');
         setEngineCapacity('');
-        setSeatingCapacity('');
         setMileage('');
-        setPickupCity('');
-        setRentRate('');
         setImage('');
-
     }
 
     return (
@@ -107,74 +178,99 @@ const AddCar = ({navigation}) => {
                     <View style={{marginTop: 20}}>
                         <Text style={styles.headerText}>ADD A CAR</Text>
                     </View>
+                    <TouchableOpacity
+                        onPress={() => setPickerVisible(true)}
+                        style={styles.button}
+                    >
+                        <Text style={styles.buttonText}>Select Car</Text>
+                    </TouchableOpacity>
                     <View style={styles.inputContainer}>
                         <TextInput
-                            placeholder='Enter Car Name'
-                            value={carName}
-                            onChangeText={text => setCarName(text)}
+                            label='Car Make'
+                            value={carMake}
+                            onChangeText={text => setCarMake(text)}
                             style={styles.input}
+                            underlineColor='#0782F9'
+                            activeUnderlineColor='#0461ba'
+                            disabled={true}
                         />
                         <TextInput
-                            placeholder='Enter Car Model'
+                            label='Car Model'
                             value={carModel}
                             onChangeText={text => setCarModel(text)}
                             style={styles.input}
+                            underlineColor='#0782F9'
+                            activeUnderlineColor='#0461ba'
+                            disabled={true}
                         />
                         <TextInput
-                            placeholder='Enter Model Year'
-                            keyboardType='numeric'
-                            value={modelYear}
+                            label='Model Version'
+                            value={carVersion.toString()}
+                            onChangeText={text => setCarMake(text)}
+                            style={styles.input}
+                            underlineColor='#0782F9'
+                            activeUnderlineColor='#0461ba'
+                            disabled={true}
+                        />
+                        <TextInput
+                            label='Model Year'
+                            value={modelYear === 0 ? '' : modelYear.toString()}
                             onChangeText={text => setModelYear(text)}
                             style={styles.input}
+                            underlineColor='#0782F9'
+                            activeUnderlineColor='#0461ba'
+                            disabled={true}
                         />
                         <TextInput
-                            placeholder='Enter Transmission Type'
-                            value={transmissionType}
-                            onChangeText={text => setTransmissionType(text)}
+                            label='Engine Type'
+                            value={engineType}
+                            onChangeText={text => setEngineType(text)}
                             style={styles.input}
+                            underlineColor='#0782F9'
+                            activeUnderlineColor='#0461ba'
+                            disabled={true}
                         />
                         <TextInput
-                            placeholder='Enter Engine Capacity'
-                            keyboardType='numeric'
+                            label='Engine Capacity'
                             value={engineCapacity}
                             onChangeText={text => setEngineCapacity(text)}
                             style={styles.input}
+                            underlineColor='#0782F9'
+                            activeUnderlineColor='#0461ba'
+                            disabled={true}
                         />
                         <TextInput
-                            placeholder='Enter Seating Capacity'
-                            keyboardType='numeric'
-                            value={seatingCapacity}
-                            onChangeText={text => setSeatingCapacity(text)}
+                            label='Transmission Type'
+                            value={transmissionType}
+                            onChangeText={text => setTransmissionType(text)}
                             style={styles.input}
+                            underlineColor='#0782F9'
+                            activeUnderlineColor='#0461ba'
+                            disabled={true}
                         />
                         <TextInput
-                            placeholder='Enter Mileage'
-                            keyboardType='numeric'
-                            value={mileage}
+                            label='Body Type'
+                            value={carType}
+                            onChangeText={text => setCarType(text)}
+                            style={styles.input}
+                            underlineColor='#0782F9'
+                            activeUnderlineColor='#0461ba'
+                            disabled={true}
+                        />
+                        <TextInput
+                            label='Enter Mileage (km)'
+                            value={mileage.toString()}
                             onChangeText={text => setMileage(text)}
                             style={styles.input}
-                        />
-                        <TextInput
-                            placeholder='Enter Pickup City'
-                            value={pickupCity}
-                            onChangeText={text => setPickupCity(text)}
-                            style={styles.input}
-                        />
-                        <TextInput
-                            placeholder='Enter Rent Rate'
-                            keyboardType='numeric'
-                            value={rentRate}
-                            onChangeText={text => setRentRate(text)}
-                            style={styles.input}
+                            underlineColor='#0782F9'
+                            activeUnderlineColor='#0461ba'
                         />
                         <View style={styles.imageContainer}>
                             <TouchableOpacity style={styles.imageButton} onPress={pickImage}>
                                 <Text style={styles.imageButtonText}>Choose Picture</Text>
                             </TouchableOpacity>
                             <Image
-                                source={{
-                                    uri: image
-                                }}
+                                source={image === '' ? require('../images/camera-icon-21.png') : {uri: image}}
                                 style={styles.image} 
                             />
                         </View>
@@ -189,6 +285,17 @@ const AddCar = ({navigation}) => {
                     </View>
                 </KeyboardAvoidingView>
             </ScrollView>
+            <CascadePicker
+                visible={pickerVisible}
+                data={carData}
+                cols={4}
+                title="Select Car"
+                cancelText="cancel"
+                confirmText = "confirm"
+                value={['1', '2', '3', '4']}
+                onCancel={() => setPickerVisible(false)}
+                onConfirm={(val) => {getCarDetails(val)}}
+            />
         </View>
     )
 }
@@ -199,24 +306,20 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         justifyContent: 'flex-start',
-        alignItems: 'center'
+        alignItems: 'center',
+        backgroundColor: 'white'
     },
     headerText:{
-        fontWeight: '800',
+        fontWeight: 'bold',
         fontSize: 30,
-        color: '#0782F9'
+        color: '#0782F9',
     },
     inputContainer: {
-        width: '80%'
+        width: '80%',
     },
     input: {
         backgroundColor: 'white',
-        paddingHorizontal: 15,
-        paddingVertical: 10,
-        borderRadius: 10,
-        marginTop: 15,
-        borderWidth: 2,
-        borderColor: '#0782F9',
+        marginTop: 5,
     },
     imageButton: {
         backgroundColor: 'white',
